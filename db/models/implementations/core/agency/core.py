@@ -35,7 +35,7 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
     # relationships
     locations: Mapped[list["LocationExpanded"]] = relationship(
         argument="LocationExpanded",
-        secondary="public.link_agencies_locations",
+        secondary="public.link_agencies__locations",
         primaryjoin="LinkAgencyLocation.agency_id == Agency.id",
         secondaryjoin="LinkAgencyLocation.location_id == LocationExpanded.id",
         back_populates="agencies",
@@ -43,7 +43,7 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
 
     data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
         argument="DataSourceExpanded",
-        secondary="public.link_agencies_data_sources",
+        secondary="public.link_agencies__data_sources",
         primaryjoin="LinkAgencyDataSource.agency_id == Agency.id",
         secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
         back_populates="agencies",

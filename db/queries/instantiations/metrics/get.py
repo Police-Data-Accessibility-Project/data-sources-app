@@ -9,7 +9,7 @@ GET_METRICS_QUERY = """
                 COUNT(DISTINCT (AGENCY_ID)),
                 'agency_count' "Count Type"
             FROM
-                link_agencies_data_sources
+                link_agencies__data_sources
             UNION
             SELECT
                 COUNT(DISTINCT L.ID),

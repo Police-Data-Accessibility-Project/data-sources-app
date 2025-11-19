@@ -235,7 +235,7 @@ class DynamicQueryConstructor:
                 agencies.name AS agency_name,
                 agencies.jurisdiction_type
             FROM
-                LINK_AGENCIES_DATA_SOURCES AS agency_source_link
+                LINK_AGENCIES__DATA_SOURCES AS agency_source_link
             INNER JOIN
                 data_sources ON agency_source_link.data_source_id = data_sources.id
             INNER JOIN
@@ -324,13 +324,13 @@ class DynamicQueryConstructor:
                 us_states.state_iso,
                 agencies.jurisdiction_type
             FROM
-                LINK_AGENCIES_DATA_SOURCES AS agency_source_link
+                LINK_AGENCIES__DATA_SOURCES AS agency_source_link
                     INNER JOIN
                     data_sources ON agency_source_link.data_source_id = data_sources.id
                     INNER JOIN
                     agencies ON agency_source_link.agency_id = agencies.id
                     LEFT JOIN
-                    link_agencies_locations LAL ON LAL.agency_id = agencies.id
+                    link_agencies__locations LAL ON LAL.agency_id = agencies.id
                     INNER JOIN
                     locations on LAL.location_id = locations.id
                     LEFT JOIN

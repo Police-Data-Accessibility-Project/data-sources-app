@@ -10,13 +10,13 @@ class RecentSearch(StandardBase, CreatedAtMixin, UserIDMixin, LocationIDMixin):
 
     record_categories = relationship(
         "RecordCategory",
-        secondary="public.link_recent_search_record_categories",
+        secondary="public.link_recent_searches__record_categories",
         primaryjoin="RecentSearch.id == LinkRecentSearchRecordCategories.recent_search_id",
         secondaryjoin="LinkRecentSearchRecordCategories.record_category_id == RecordCategory.id",
     )
     record_types = relationship(
         "RecordType",
-        secondary="public.link_recent_search_record_types",
+        secondary="public.link_recent_searches__record_types",
         primaryjoin="RecentSearch.id == LinkRecentSearchRecordTypes.recent_search_id",
         secondaryjoin="LinkRecentSearchRecordTypes.record_type_id == RecordType.id",
     )

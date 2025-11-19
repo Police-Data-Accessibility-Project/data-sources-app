@@ -27,7 +27,7 @@ class LocationExpanded(StandardBase, CountMetadata, IterWithSpecialCasesMixin):
 
     agencies: Mapped[list["AgencyExpanded"]] = relationship(
         argument="AgencyExpanded",
-        secondary="public.link_agencies_locations",
+        secondary="public.link_agencies__locations",
         primaryjoin="LocationExpanded.id == LinkAgencyLocation.location_id",
         secondaryjoin="LinkAgencyLocation.agency_id == AgencyExpanded.id",
         back_populates="locations",

@@ -58,7 +58,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "data_sources": DataSource,
     "data_sources_expanded": DataSourceExpanded,
     "data_sources_archive_info": DataSourceArchiveInfo,
-    "link_data_sources_data_requests": LinkDataSourceDataRequest,
+    "link_data_requests__data_sources": LinkDataSourceDataRequest,
     "reset_tokens": ResetToken,
     "test_table": TestTable,
     "users": User,
