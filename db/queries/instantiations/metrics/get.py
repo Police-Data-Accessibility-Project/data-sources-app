@@ -28,7 +28,7 @@ GET_METRICS_QUERY = """
                 COUNT(DISTINCT L.ID),
                 'county_count' "Count Type"
             FROM
-                LINK_AGENCIES_DATA_SOURCES LINK
+                LINK_AGENCIES__DATA_SOURCES LINK
                 INNER JOIN AGENCIES A ON A.ID = LINK.AGENCY_ID
                 LEFT JOIN LINK_AGENCIES__LOCATIONS LAL on A.ID = LAL.AGENCY_ID
                 JOIN DEPENDENT_LOCATIONS DL ON LAL.LOCATION_ID = DL.DEPENDENT_LOCATION_ID
