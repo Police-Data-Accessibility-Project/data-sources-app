@@ -29,7 +29,7 @@ def upgrade() -> None:
 
 def remove_broken_url_as_of_trigger():
     # Remove trigger as well
-    op.execute("DROP TRIGGER IF EXISTS update_broken_source_url_as_of ON data_source")
+    op.execute("DROP TRIGGER IF EXISTS update_broken_source_url_as_of ON data_sources")
 
 
 def add_internet_archive_url_to_data_sources():
