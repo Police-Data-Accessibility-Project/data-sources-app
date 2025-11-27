@@ -126,3 +126,12 @@ def test_typeahead_agencies_approved(test_data_creator_flask: TestDataCreatorFla
 
     assert "Qzy" in result["display_name"]
     assert result["id"] == int(agency_id)
+
+    # Even the most absurd misspellings should pull back something
+    json_content = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="get",
+        endpoint="/typeahead/locations?query=AbsolutelyGodawfulMisspelledEntryThatShouldMatchNothing",
+        expected_schema=TypeaheadLocationsOuterResponseSchema,
+    )
+    assert len(json_content["suggestions"]) >= 1
