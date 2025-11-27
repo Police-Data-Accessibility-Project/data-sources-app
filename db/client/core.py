@@ -494,6 +494,16 @@ class DatabaseClient:
             search_term
         )
         self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        if len(results) > 0:
+            return results
+
+        fuzzy_match_query = (
+            DynamicQueryConstructor.generate_fuzzy_match_typeahead_agencies_query(
+                search_term
+            )
+        )
+        self.cursor.execute(fuzzy_match_query)
         return self.cursor.fetchall()
 
     @cursor_manager()
