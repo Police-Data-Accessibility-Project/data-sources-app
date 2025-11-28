@@ -11,6 +11,7 @@ from db.enums import (
     ExternalAccountTypeEnum,
     RequestUrgency,
 )
+from db.models.implementations import LinkDataSourceDataRequest
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.log.notification import NotificationLog

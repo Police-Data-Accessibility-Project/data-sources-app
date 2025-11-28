@@ -55,7 +55,7 @@ def create_data_request_related_source(
         db_client.run_query_builder(
             DataRequestRelatedSourceAddLinkQueryBuilder(
                 data_request_id=int(dto.resource_id),
-                data_source_id=int(dto.resource_id),
+                data_source_id=int(dto.data_source_id),
             )
         )
     except IntegrityError:

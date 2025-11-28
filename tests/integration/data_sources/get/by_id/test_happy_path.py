@@ -19,6 +19,7 @@ def test_data_sources_by_id_get(test_data_creator_flask: TestDataCreatorFlask):
     retrieves the data source with the correct homepage URL
     """
     tdc = test_data_creator_flask
+    tdc.clear_test_data()
 
     tus = tdc.standard_user()
     cds = tdc.data_source()
