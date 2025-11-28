@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Any
 
 from sqlalchemy import Select, RowMapping
 from sqlalchemy.orm import Session
@@ -10,6 +10,9 @@ def mappings(session: Session, query: Select) -> Sequence[RowMapping]:
     raw_result = session.execute(query)
     return raw_result.mappings().all()
 
+def scalar(session: Session, query: Select) -> Any:
+    raw_result = session.execute(query)
+    return raw_result.scalar()
 
 def add_many(
     session: Session, models: list[Base], return_ids: bool = False

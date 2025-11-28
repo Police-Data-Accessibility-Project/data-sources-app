@@ -24,7 +24,7 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
     run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
-        endpoint="/permissions?user_email=" + admin_tus.user_info.email,
+        endpoint="/data-requests",
         headers={"Authorization": f"Bearer {jwt_tokens.access_token}"},
     )
 
@@ -51,10 +51,9 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
     run_and_validate_request(
         flask_client=tdc.flask_client,
         http_method="get",
-        endpoint="/permissions?user_email=" + admin_tus.user_info.email,
-        headers={"Authorization": f"Bearer {new_access_token}"},
+        endpoint="/data-requests",
+        headers={"Authorization": f"Bearer {jwt_tokens.access_token}"},
     )
-
 
 def test_refresh_session_post_access_token(
     test_data_creator_flask: TestDataCreatorFlask,

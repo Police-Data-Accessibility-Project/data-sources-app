@@ -37,6 +37,9 @@ class QueryBuilderBase(ABC):
         return query.compile(compile_kwargs={"literal_binds": True})
 
     # Passthroughs to session helper
+    def scalar(self, query: Select) -> Any:
+        return self.sh.scalar(self.session, query=query)
+
     def mappings(self, query: Select) -> Sequence[RowMapping]:
         return self.sh.mappings(self.session, query=query)
 

@@ -25,7 +25,7 @@ from middleware.enums import (
 from middleware.security.access_info.primary import AccessInfoPrimary
 from middleware.security.auth.fastapi import (
     get_source_collector_data_sources_access_info,
-    get_standard_access_info,
+    get_standard_access_info, access_with, access_with_read_all_user_info, access_with_user_create_update,
 )
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
@@ -51,6 +51,22 @@ def client() -> Generator[TestClient, None, None]:
                 user_email="test@example.com",
                 access_type=AccessTypeEnum.JWT,
             )
+        )
+        app.dependency_overrides[access_with_read_all_user_info] = lambda: AccessInfoPrimary(
+            user_id=MOCK_USER_ID,
+            permissions=[
+                PermissionsEnum.READ_ALL_USER_INFO,
+            ],
+            user_email="test@example.com",
+            access_type=AccessTypeEnum.JWT,
+        )
+        app.dependency_overrides[access_with_user_create_update] = lambda: AccessInfoPrimary(
+            user_id=MOCK_USER_ID,
+            permissions=[
+                PermissionsEnum.USER_CREATE_UPDATE,
+            ],
+            user_email="test@example.com",
+            access_type=AccessTypeEnum.JWT,
         )
         app.dependency_overrides[get_standard_access_info] = lambda: AccessInfoPrimary(
             user_id=MOCK_USER_ID,
