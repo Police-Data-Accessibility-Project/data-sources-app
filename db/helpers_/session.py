@@ -15,15 +15,13 @@ def scalar(session: Session, query: Select) -> Any:
     raw_result = session.execute(query)
     return raw_result.scalar()
 
+
 def results_exists(session: Session, query: Select) -> bool:
     raw_result = session.execute(query)
     return raw_result.scalar() is not None
 
-def add(
-    session: Session,
-    model: Base,
-    return_id: bool = False
-) -> int | None:
+
+def add(session: Session, model: Base, return_id: bool = False) -> int | None:
     session.add(model)
     if not return_id:
         return None
@@ -32,8 +30,6 @@ def add(
 
     session.flush()
     return model.id
-
-
 
 
 def add_many(

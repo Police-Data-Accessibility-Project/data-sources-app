@@ -10,12 +10,6 @@ class DataRequestExistsQueryBuilder(QueryBuilderBase):
         self.data_request_id = data_request_id
 
     def run(self) -> bool:
+        query = select(DataRequest.id).where(DataRequest.id == self.data_request_id)
 
-        query = (
-            select(DataRequest.id)
-            .where(DataRequest.id == self.data_request_id)
-        )
-
-        return self.results_exists(
-            query
-        )
+        return self.results_exists(query)

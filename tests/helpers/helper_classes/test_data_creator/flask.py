@@ -109,9 +109,7 @@ class TestDataCreatorFlask:
         )
 
     def link_data_request_to_data_source(
-        self,
-        data_source_id: int,
-        data_request_id: int
+        self, data_source_id: int, data_request_id: int
     ) -> None:
         run_and_validate_request(
             flask_client=self.flask_client,

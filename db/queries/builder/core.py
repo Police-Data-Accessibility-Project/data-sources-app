@@ -43,7 +43,9 @@ class QueryBuilderBase(ABC):
     def mappings(self, query: Select) -> Sequence[RowMapping]:
         return self.sh.mappings(self.session, query=query)
 
-    def add_many(self, models: list[Base], return_ids: bool = False) -> list[int] | None:
+    def add_many(
+        self, models: list[Base], return_ids: bool = False
+    ) -> list[int] | None:
         return self.sh.add_many(self.session, models=models, return_ids=return_ids)
 
     def add(self, model: Base, return_id: bool = False) -> int | None:

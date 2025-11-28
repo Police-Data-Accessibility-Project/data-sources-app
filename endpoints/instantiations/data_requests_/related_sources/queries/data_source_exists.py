@@ -10,9 +10,6 @@ class DataSourceExistsQueryBuilder(QueryBuilderBase):
         self.data_source_id = data_source_id
 
     def run(self) -> bool:
-        query = (
-            select(DataSource.id)
-            .where(DataSource.id == self.data_source_id)
-        )
+        query = select(DataSource.id).where(DataSource.id == self.data_source_id)
 
         return self.results_exists(query)
