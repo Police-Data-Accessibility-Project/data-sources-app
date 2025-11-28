@@ -16,15 +16,14 @@ class PermissionsEnum(Enum):
     Enums for the permissions logic.
     """
 
-    DB_WRITE = "db_write"
+    DB_WRITE = "write_data"
     READ_ALL_USER_INFO = "read_all_user_info"
-    NOTIFICATIONS = "notifications"
-    SOURCE_COLLECTOR = "source_collector"
-    USER_CREATE_UPDATE = "user_create_update"
-    ARCHIVE_WRITE = "archive_write"
-    GITHUB_SYNC = "github_sync"
+    NOTIFICATIONS = "send_notifications"
+    SOURCE_COLLECTOR = "access_source_collector"
+    USER_CREATE_UPDATE = "create_update_user"
+    GITHUB_SYNC = "sync_to_github"
     SOURCE_COLLECTOR_FINAL_REVIEW = "source_collector_final_review"
-    SOURCE_COLLECTOR_DATA_SOURCES = "source_collector_data_sources"
+    SOURCE_COLLECTOR_DATA_SOURCES = "call_ds_source_collector_endpoints"
 
     @classmethod
     def values(cls):

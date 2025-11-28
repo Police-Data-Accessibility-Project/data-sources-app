@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Callable
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -67,3 +67,30 @@ def get_standard_access_info(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> AccessInfoPrimary:
     return validate_token(token)
+
+
+def access_with(permission: PermissionsEnum) -> Callable[[str], AccessInfoPrimary]:
+    """
+    Helper for FastAPI routes that requires a valid access token with the specified permission.
+    """
+
+    def inner_function(token: str, permission_: PermissionsEnum) -> AccessInfoPrimary:
+        try:
+            return check_access(token, permission_)
+        # Translate exceptions into FastAPI exceptions
+        except BadRequest as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=e.description,
+            )
+        except Unauthorized as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=e.description,
+            )
+
+    return lambda token=Depends(oauth2_scheme): inner_function(token, permission)
+
+
+access_with_read_all_user_info = access_with(PermissionsEnum.READ_ALL_USER_INFO)
+access_with_user_create_update = access_with(PermissionsEnum.USER_CREATE_UPDATE)

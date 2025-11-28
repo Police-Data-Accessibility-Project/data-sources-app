@@ -138,12 +138,6 @@ from endpoints.schema_config.instantiations.notifications_.core import (
 from endpoints.schema_config.instantiations.notifications_.preview import (
     NotificationsPreviewEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.permissions.get import (
-    PermissionsGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.permissions.put import (
-    PermissionsPutEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.record_type_and_category import (
     RecordTypeAndCategoryGetEndpointSchemaConfig,
 )
@@ -287,10 +281,6 @@ class SchemaConfigs(Enum):
     API_KEY_POST = ApiKeyPostEndpointSchemaConfig
     # endregion
 
-    # region Permission
-    PERMISSIONS_GET = PermissionsGetEndpointSchemaConfig
-    PERMISSIONS_PUT = PermissionsPutEndpointSchemaConfig
-    # endregion
     # region Match
     MATCH_AGENCY = MatchAgencyEndpointSchemaConfig
     # endregion

@@ -294,5 +294,10 @@ def user_admin(test_data_creator_flask) -> TestUserSetup:
 
 
 @pytest.fixture
+def user_standard(test_data_creator_flask) -> TestUserSetup:
+    return test_data_creator_flask.standard_user()
+
+
+@pytest.fixture
 def tomorrow() -> datetime.date:
     return datetime.date.today() + datetime.timedelta(days=1)
