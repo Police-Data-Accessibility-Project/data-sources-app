@@ -21,7 +21,7 @@ def test_permissions(api_test_helper: APITestHelper, user_standard: TestUserSetu
         url="/permission",
         expected_model=GetPermissionListResponse,
     )
-    assert response.mappings == []
+    assert len(response.mappings) == 8
 
     user_url: str = f"/permission/user/{tus.user_info.user_id}"
 
