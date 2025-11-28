@@ -17,7 +17,7 @@ from tests.helpers.helper_classes.test_data_creator.flask import (
 
 
 def test_metrics_followed_searches_breakdown(
-    test_data_creator_flask: TestDataCreatorFlask, monkeypatch
+    test_data_creator_flask: TestDataCreatorFlask, monkeypatch, pittsburgh_id: int
 ):
     monkeypatch.setenv("VITE_VUE_APP_BASE_URL", "https://example.com")
 

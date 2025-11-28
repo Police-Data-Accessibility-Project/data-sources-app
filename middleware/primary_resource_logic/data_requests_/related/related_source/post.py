@@ -1,16 +1,18 @@
+from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import BadRequest, Forbidden, Conflict
+
 from db.client.core import DatabaseClient
-from middleware.column_permission.relation_role_parameters import RelationRoleParameters
-from middleware.custom_dataclasses import DeferredFunction
-from middleware.dynamic_request_logic.supporting_classes import MiddlewareParameters
-from middleware.primary_resource_logic.data_requests_.constants import (
-    RELATED_SOURCES_RELATION,
+from endpoints.instantiations.data_requests_.related_sources.queries.add_link import (
+    DataRequestRelatedSourceAddLinkQueryBuilder,
 )
-from middleware.primary_resource_logic.data_requests_.helpers import (
-    get_data_requests_relation_role,
+from endpoints.instantiations.data_requests_.related_sources.queries.data_request_exists import (
+    DataRequestExistsQueryBuilder,
 )
-from middleware.primary_resource_logic.data_requests_.related.related_source.helpers import (
-    CreateDataRequestRelatedSourceLogic,
+from endpoints.instantiations.data_requests_.related_sources.queries.data_source_exists import (
+    DataSourceExistsQueryBuilder,
 )
+from middleware.common_response_formatting import message_response
+from middleware.primary_resource_logic.data_requests_.helpers import is_creator_or_admin
 from middleware.schema_and_dto.dtos.data_requests.by_id.source import (
     RelatedSourceByIDDTO,
 )
@@ -20,20 +22,39 @@ from middleware.security.access_info.primary import AccessInfoPrimary
 def create_data_request_related_source(
     db_client: DatabaseClient, access_info: AccessInfoPrimary, dto: RelatedSourceByIDDTO
 ):
-    post_logic = CreateDataRequestRelatedSourceLogic(
-        middleware_parameters=MiddlewareParameters(
-            access_info=access_info,
-            entry_name="Request-Source association",
-            relation=RELATED_SOURCES_RELATION,
-            db_client_method=DatabaseClient.create_request_source_relation,
-        ),
-        entry=dto.get_where_mapping(),
-        relation_role_parameters=RelationRoleParameters(
-            relation_role_function_with_params=DeferredFunction(
-                function=get_data_requests_relation_role,
-                data_request_id=dto.resource_id,
-                db_client=db_client,
-            )
-        ),
+    # Check if user is either an owner or admin
+    if not is_creator_or_admin(
+        access_info=access_info,
+        data_request_id=int(dto.resource_id),
+        db_client=db_client,
+    ):
+        raise Forbidden("User does not have permission to perform this action.")
+
+    # Check if data request exists, raise request not found error otherwise (bad request)
+    request_exists: bool = db_client.run_query_builder(
+        DataRequestExistsQueryBuilder(data_request_id=int(dto.resource_id))
     )
-    return post_logic.execute()
+    if not request_exists:
+        raise BadRequest("Request not found")
+
+    # Check if data source exists, raise source not found error otherwise (bad request)
+    source_exists: bool = db_client.run_query_builder(
+        DataSourceExistsQueryBuilder(data_source_id=int(dto.data_source_id))
+    )
+    if not source_exists:
+        raise BadRequest("Source not found")
+
+    # Add request-source association if it doesn't exist
+    try:
+        db_client.run_query_builder(
+            DataRequestRelatedSourceAddLinkQueryBuilder(
+                data_request_id=int(dto.resource_id),
+                data_source_id=int(dto.data_source_id),
+            )
+        )
+    except IntegrityError:
+        raise Conflict("Request-Source association already exists.")
+
+    return message_response(
+        message="Data source successfully associated with request.",
+    )

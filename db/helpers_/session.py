@@ -16,6 +16,22 @@ def scalar(session: Session, query: Select) -> Any:
     return raw_result.scalar()
 
 
+def results_exists(session: Session, query: Select) -> bool:
+    raw_result = session.execute(query)
+    return raw_result.scalar() is not None
+
+
+def add(session: Session, model: Base, return_id: bool = False) -> int | None:
+    session.add(model)
+    if not return_id:
+        return None
+    if not hasattr(model, "id"):
+        raise AttributeError("Model must have an id attribute")
+
+    session.flush()
+    return model.id  # pyright: ignore [reportAttributeAccessIssue]
+
+
 def add_many(
     session: Session, models: list[Base], return_ids: bool = False
 ) -> list[int] | None:

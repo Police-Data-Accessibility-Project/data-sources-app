@@ -43,5 +43,13 @@ class QueryBuilderBase(ABC):
     def mappings(self, query: Select) -> Sequence[RowMapping]:
         return self.sh.mappings(self.session, query=query)
 
-    def add_many(self, models: list[Base], return_ids: bool = False):
+    def add_many(
+        self, models: list[Base], return_ids: bool = False
+    ) -> list[int] | None:
         return self.sh.add_many(self.session, models=models, return_ids=return_ids)
+
+    def add(self, model: Base, return_id: bool = False) -> int | None:
+        return self.sh.add(self.session, model=model, return_id=return_id)
+
+    def results_exists(self, query: Select) -> bool:
+        return self.sh.results_exists(self.session, query=query)

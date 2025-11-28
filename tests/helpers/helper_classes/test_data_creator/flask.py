@@ -50,7 +50,7 @@ class TestDataCreatorFlask:
         )
         return cdc
 
-    def clear_test_data(self):
+    def clear_test_data(self) -> None:
         tdc_db = TestDataCreatorDBClient()
         tdc_db.clear_test_data()
         # Recreate admin user
@@ -99,16 +99,18 @@ class TestDataCreatorFlask:
     def refresh_typeahead_agencies(self):
         self.db_client.execute_raw_sql("CALL refresh_typeahead_agencies();")
 
-    def refresh_typeahead_locations(self):
+    def refresh_typeahead_locations(self) -> None:
         self.db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
-    def link_data_source_to_agency(self, data_source_id: int, agency_id: int):
+    def link_data_source_to_agency(self, data_source_id: int, agency_id: int) -> None:
         self.tdcdb.link_data_source_to_agency(
             data_source_id=data_source_id,
             agency_id=agency_id,
         )
 
-    def link_data_request_to_data_source(self, data_source_id, data_request_id):
+    def link_data_request_to_data_source(
+        self, data_source_id: int, data_request_id: int
+    ) -> None:
         run_and_validate_request(
             flask_client=self.flask_client,
             http_method="post",
@@ -149,7 +151,7 @@ class TestDataCreatorFlask:
             locality_name=locality_name, state_iso=state_iso, county_name=county_name
         )
 
-    def add_permission(self, user_email: str, permission: PermissionsEnum):
+    def add_permission(self, user_email: str, permission: PermissionsEnum) -> None:
         self.request_validator.update_permissions(
             user_email=user_email,
             headers=self.get_admin_tus().jwt_authorization_header,
