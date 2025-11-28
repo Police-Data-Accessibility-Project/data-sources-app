@@ -68,9 +68,8 @@ def get_standard_access_info(
 ) -> AccessInfoPrimary:
     return validate_token(token)
 
-def access_with(
-    permission: PermissionsEnum
-) -> Callable[[str], AccessInfoPrimary]:
+
+def access_with(permission: PermissionsEnum) -> Callable[[str], AccessInfoPrimary]:
     """
     Helper for FastAPI routes that requires a valid access token with the specified permission.
     """

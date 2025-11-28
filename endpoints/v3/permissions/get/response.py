@@ -7,5 +7,6 @@ class PermissionDescriptionMapping(BaseModel):
     permission: PermissionsEnum
     description: str
 
+
 class GetPermissionListResponse(BaseModel):
     mappings: list[PermissionDescriptionMapping]

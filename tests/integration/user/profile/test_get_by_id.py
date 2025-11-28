@@ -1,20 +1,17 @@
 from http import HTTPStatus
 
 from db.models.implementations.core.user.permission import UserPermission
-from middleware.enums import PermissionsEnum, RecordTypesEnum
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from tests.integration.v3.helpers.api_test_helper import APITestHelper
 
 
 def test_user_profile_get_by_id(
-    test_data_creator_flask: TestDataCreatorFlask,
-    pennsylvania_id,
-    california_id
+    test_data_creator_flask: TestDataCreatorFlask, pennsylvania_id, california_id
 ):
     tdc = test_data_creator_flask
 
@@ -48,7 +45,6 @@ def test_user_profile_get_by_id(
         permission_id=1,
     )
     tdc.tdcdb.db_client.add(permission)
-
 
     # Link the user to a fictional github account
     github_user_id = tdc.tdcdb.link_fake_github_to_user(user_id=tus.user_info.user_id)

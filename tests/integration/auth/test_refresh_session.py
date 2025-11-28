@@ -55,6 +55,7 @@ def test_refresh_session_post(test_data_creator_flask: TestDataCreatorFlask):
         headers={"Authorization": f"Bearer {jwt_tokens.access_token}"},
     )
 
+
 def test_refresh_session_post_access_token(
     test_data_creator_flask: TestDataCreatorFlask,
 ):

@@ -44,6 +44,3 @@ class PermissionsManager:
 
         self.db_client.remove_user_permission(self.user_id, permission)
         return message_response("Permission removed")
-
-
-

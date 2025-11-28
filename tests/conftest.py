@@ -292,6 +292,7 @@ def sample_record_type_id(live_database_client) -> int:
 def user_admin(test_data_creator_flask) -> TestUserSetup:
     return test_data_creator_flask.get_admin_tus()
 
+
 @pytest.fixture
 def user_standard(test_data_creator_flask) -> TestUserSetup:
     return test_data_creator_flask.standard_user()

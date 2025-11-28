@@ -1,14 +1,14 @@
-from endpoints.v3.permissions.get.response import GetPermissionListResponse, PermissionDescriptionMapping
+from endpoints.v3.permissions.get.response import (
+    GetPermissionListResponse,
+    PermissionDescriptionMapping,
+)
 from middleware.enums import PermissionsEnum
 from middleware.schema_and_dto.dtos.common_dtos import MessageDTO
 from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 
 
-def test_permissions(
-    api_test_helper: APITestHelper,
-    user_standard: TestUserSetup
-):
+def test_permissions(api_test_helper: APITestHelper, user_standard: TestUserSetup):
     """
     Test the retrieval, addition, and removal of user permissions
     """
@@ -17,11 +17,11 @@ def test_permissions(
 
     rv = ath.request_validator
 
-
     response: GetPermissionListResponse = rv.get_v3(
         url="/permission",
         expected_model=GetPermissionListResponse,
     )
+    assert response.mappings == []
 
     user_url: str = f"/permission/user/{tus.user_info.user_id}"
 
@@ -36,7 +36,7 @@ def test_permissions(
         expected_model=MessageDTO,
         json={
             "permission": PermissionsEnum.DB_WRITE.value,
-        }
+        },
     )
 
     user_get_response_2: GetPermissionListResponse = rv.get_v3(
@@ -46,7 +46,7 @@ def test_permissions(
     assert user_get_response_2.mappings == [
         PermissionDescriptionMapping(
             permission=PermissionsEnum.DB_WRITE,
-            description='Use endpoints that write data to the database.'
+            description="Use endpoints that write data to the database.",
         )
     ]
 
@@ -55,7 +55,7 @@ def test_permissions(
         expected_model=MessageDTO,
         json={
             "permission": PermissionsEnum.DB_WRITE.value,
-        }
+        },
     )
 
     user_get_response_3: GetPermissionListResponse = rv.get_v3(

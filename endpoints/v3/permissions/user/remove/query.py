@@ -5,18 +5,14 @@ from db.queries.builder.core import QueryBuilderBase
 
 
 class RemoveUserPermissionQueryBuilder(QueryBuilderBase):
-
     def __init__(self, user_id: int, permission_id: int):
         super().__init__()
         self.user_id = user_id
         self.permission_id = permission_id
 
     def run(self) -> None:
-        statement = (
-            delete(UserPermission)
-            .where(
-                UserPermission.user_id == self.user_id,
-                UserPermission.permission_id == self.permission_id,
-            )
+        statement = delete(UserPermission).where(
+            UserPermission.user_id == self.user_id,
+            UserPermission.permission_id == self.permission_id,
         )
         self.session.execute(statement)

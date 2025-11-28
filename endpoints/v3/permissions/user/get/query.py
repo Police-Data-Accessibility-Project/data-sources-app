@@ -5,11 +5,13 @@ from sqlalchemy import select, RowMapping
 from db.models.implementations.core.permission import Permission
 from db.models.implementations.core.user.permission import UserPermission
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.permissions.get.response import GetPermissionListResponse, PermissionDescriptionMapping
+from endpoints.v3.permissions.get.response import (
+    GetPermissionListResponse,
+    PermissionDescriptionMapping,
+)
 
 
 class GetUserPermissionsQueryBuilder(QueryBuilderBase):
-
     def __init__(self, user_id: int):
         super().__init__()
         self.user_id = user_id
@@ -30,8 +32,5 @@ class GetUserPermissionsQueryBuilder(QueryBuilderBase):
         )
         mappings: Sequence[RowMapping] = self.mappings(query)
         return GetPermissionListResponse(
-            mappings=[
-                PermissionDescriptionMapping(**mapping)
-                for mapping in mappings
-            ]
+            mappings=[PermissionDescriptionMapping(**mapping) for mapping in mappings]
         )

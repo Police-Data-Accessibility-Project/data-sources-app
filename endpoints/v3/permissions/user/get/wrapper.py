@@ -6,6 +6,4 @@ from endpoints.v3.permissions.user.get.query import GetUserPermissionsQueryBuild
 def get_user_permissions_wrapper(
     user_id: int,
 ) -> GetPermissionListResponse:
-    return run_query_builder(
-        GetUserPermissionsQueryBuilder(user_id=user_id)
-    )
+    return run_query_builder(GetUserPermissionsQueryBuilder(user_id=user_id))

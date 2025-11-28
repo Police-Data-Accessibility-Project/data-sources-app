@@ -16,7 +16,7 @@ def test_admin_user_create(test_data_creator_flask: TestDataCreatorFlask):
         "password": "password123",
         "permissions": [
             PermissionsEnum.READ_ALL_USER_INFO.value,
-            PermissionsEnum.DB_WRITE.value
+            PermissionsEnum.DB_WRITE.value,
         ],
     }
     response = tdc.request_validator.create_user(
@@ -58,7 +58,7 @@ def test_admin_user_get_all(test_data_creator_flask: TestDataCreatorFlask):
             password="password123",
             permissions=[
                 PermissionsEnum.READ_ALL_USER_INFO.value,
-                PermissionsEnum.DB_WRITE.value
+                PermissionsEnum.DB_WRITE.value,
             ],
         )
 
@@ -73,14 +73,8 @@ def test_admin_user_get_all(test_data_creator_flask: TestDataCreatorFlask):
     for i in range(3):
         assert "newuser" in data[i]["email"]
         assert data[i]["permissions"] in (
-            [
-                PermissionsEnum.READ_ALL_USER_INFO.value,
-                PermissionsEnum.DB_WRITE.value
-            ],
-            [
-                PermissionsEnum.DB_WRITE.value,
-                PermissionsEnum.READ_ALL_USER_INFO.value
-            ],
+            [PermissionsEnum.READ_ALL_USER_INFO.value, PermissionsEnum.DB_WRITE.value],
+            [PermissionsEnum.DB_WRITE.value, PermissionsEnum.READ_ALL_USER_INFO.value],
         )
 
 
@@ -95,7 +89,7 @@ def test_admin_user_update(test_data_creator_flask: TestDataCreatorFlask):
         password="password123",
         permissions=[
             PermissionsEnum.READ_ALL_USER_INFO.value,
-            PermissionsEnum.DB_WRITE.value
+            PermissionsEnum.DB_WRITE.value,
         ],
     )
     new_user_id = response["id"]
