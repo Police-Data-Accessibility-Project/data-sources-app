@@ -25,11 +25,11 @@ def add(session: Session, model: Base, return_id: bool = False) -> int | None:
     session.add(model)
     if not return_id:
         return None
-    if not hasattr(model, "id"):  # pyright: ignore [reportAttributeAccessIssue]
+    if not hasattr(model, "id"):
         raise AttributeError("Model must have an id attribute")
 
     session.flush()
-    return model.id
+    return model.id  # pyright: ignore [reportAttributeAccessIssue]
 
 
 def add_many(
