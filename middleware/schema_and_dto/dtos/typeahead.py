@@ -13,3 +13,10 @@ class TypeaheadDTO(BaseModel):
             source=SourceMappingEnum.QUERY_ARGS, required=True
         ),
     )
+    page: int = Field(
+        default=1,
+        description="The page number to get suggestions for.",
+        json_schema_extra=MetadataInfo(
+            source=SourceMappingEnum.QUERY_ARGS, required=False
+        ),
+    )

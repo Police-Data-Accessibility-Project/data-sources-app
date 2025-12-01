@@ -891,9 +891,9 @@ class RequestValidator:
             expected_json_content=expected_json_content,
         )
 
-    def typeahead_agency(self, query: str):
+    def typeahead_agency(self, query: str, page: int = 1):
         return self.get(
-            endpoint=f"/typeahead/agencies?query={query}",
+            endpoint=f"/typeahead/agencies?query={query}&page={page}",
             expected_schema=TypeaheadAgenciesEndpointSchemaConfig.primary_output_schema,
         )
 
