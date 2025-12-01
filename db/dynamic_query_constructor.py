@@ -130,7 +130,10 @@ class DynamicQueryConstructor:
         return query
 
     @staticmethod
-    def generate_like_typeahead_locations_query(search_term: str) -> sql.Composed:
+    def generate_like_typeahead_locations_query(
+        search_term: str, page: int
+    ) -> sql.Composed:
+        offset = (page - 1) * 10
         query = sql.SQL(
             """
         WITH combined AS (
@@ -169,17 +172,19 @@ class DynamicQueryConstructor:
                 location_id
             FROM combined
             ORDER BY sort_order, display_name
-            LIMIT 10
+            LIMIT 10 OFFSET {offset}
         ) as results;
         """
         ).format(
             search_term_prefix=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
+            offset=sql.Literal(offset),
         )
         return query
 
     @staticmethod
-    def generate_new_typeahead_agencies_query(search_term: str):
+    def generate_new_typeahead_agencies_query(search_term: str, page: int):
+        offset = (page - 1) * 10
         query = sql.SQL(
             """
         WITH combined AS (
@@ -224,12 +229,13 @@ class DynamicQueryConstructor:
                 county_name
             FROM combined
             ORDER BY sort_order, name
-            LIMIT 10
+            LIMIT 10 offset {offset}
         ) as results
         """
         ).format(
             search_term=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
+            offset=sql.Literal(offset),
         )
         return query
 

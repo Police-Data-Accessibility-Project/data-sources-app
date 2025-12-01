@@ -469,14 +469,16 @@ class DatabaseClient:
         )
 
     @cursor_manager()
-    def get_typeahead_locations(self, search_term: str) -> list[dict]:
+    def get_typeahead_locations(self, search_term: str, page: int) -> list[dict]:
         """Return a list of data sources that match the search query."""
         query = DynamicQueryConstructor.generate_like_typeahead_locations_query(
-            search_term
+            search_term, page=page
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
-        if 0 < len(results) <= 10:
+        if 0 < len(results):
+            return results
+        if page > 1:
             return results
 
         fuzzy_match_query = (
@@ -488,14 +490,16 @@ class DatabaseClient:
         return self.cursor.fetchall()
 
     @cursor_manager()
-    def get_typeahead_agencies(self, search_term: str) -> list[dict]:
+    def get_typeahead_agencies(self, search_term: str, page: int) -> list[dict]:
         """Return a list of data sources that match the search query."""
         query = DynamicQueryConstructor.generate_new_typeahead_agencies_query(
-            search_term
+            search_term, page=page
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
         if len(results) > 0:
+            return results
+        if page > 1:
             return results
 
         fuzzy_match_query = (

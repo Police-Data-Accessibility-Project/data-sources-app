@@ -1,6 +1,6 @@
 def test_get_typeahead_locations_locality(live_database_client, pittsburgh_id):
     live_database_client.refresh_all_materialized_views()
-    results = live_database_client.get_typeahead_locations(search_term="Pit")
+    results = live_database_client.get_typeahead_locations(search_term="Pit", page=1)
     assert len(results) > 0
 
     assert results[0]["display_name"] == "Pittsburgh, Allegheny, Pennsylvania"

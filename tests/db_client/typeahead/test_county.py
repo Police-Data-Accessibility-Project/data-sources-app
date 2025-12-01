@@ -1,5 +1,5 @@
 def test_get_typeahead_locations_county(live_database_client):
-    results = live_database_client.get_typeahead_locations(search_term="All")
+    results = live_database_client.get_typeahead_locations(search_term="All", page=1)
     assert len(results) > 0
 
     assert results[0]["display_name"] == "Allegheny, Pennsylvania"

@@ -21,7 +21,7 @@ def test_get_typeahead_agencies(live_database_client, pittsburgh_id):
     )
     db_client.refresh_all_materialized_views()
 
-    results = live_database_client.get_typeahead_agencies(search_term="Xyl")
+    results = live_database_client.get_typeahead_agencies(search_term="Xyl", page=1)
     assert len(results) > 0
     assert results[0]["display_name"] == "Xylodammerung Police Agency"
     assert results[0]["jurisdiction_type"] == "state"

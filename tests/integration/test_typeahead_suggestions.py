@@ -50,6 +50,15 @@ def test_typeahead_locations(flask_client_with_db):
 
     assert suggestions == expected_suggestions
 
+    # Add pagination testing
+    suggestions = run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint="/typeahead/locations?query=xyl&page=2",
+        expected_schema=TypeaheadLocationsOuterResponseSchema,
+    )["suggestions"]
+    assert len(suggestions) == 0
+
     # Even the most absurd misspellings should pull back something
     json_content = run_and_validate_request(
         flask_client=flask_client_with_db,
@@ -126,6 +135,10 @@ def test_typeahead_agencies_approved(test_data_creator_flask: TestDataCreatorFla
 
     assert "Qzy" in result["display_name"]
     assert result["id"] == int(agency_id)
+
+    # Add pagination testing
+    json_content = tdc.request_validator.typeahead_agency(query="qzy", page=2)
+    assert len(json_content["suggestions"]) == 0
 
     # Even the most absurd misspellings should pull back something
     json_content = run_and_validate_request(
