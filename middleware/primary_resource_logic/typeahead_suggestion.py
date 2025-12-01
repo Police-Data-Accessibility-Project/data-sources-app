@@ -16,4 +16,6 @@ def get_typeahead_results(
     dto: TypeaheadDTO,
     db_client_method: Callable,
 ):
-    return make_response({"suggestions": db_client_method(db_client, dto.query, dto.page)})
+    return make_response(
+        {"suggestions": db_client_method(db_client, dto.query, dto.page)}
+    )

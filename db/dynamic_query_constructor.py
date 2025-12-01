@@ -131,8 +131,7 @@ class DynamicQueryConstructor:
 
     @staticmethod
     def generate_like_typeahead_locations_query(
-        search_term: str,
-        page: int
+        search_term: str, page: int
     ) -> sql.Composed:
         offset = (page - 1) * 10
         query = sql.SQL(
@@ -179,15 +178,12 @@ class DynamicQueryConstructor:
         ).format(
             search_term_prefix=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
-            offset=sql.Literal(offset)
+            offset=sql.Literal(offset),
         )
         return query
 
     @staticmethod
-    def generate_new_typeahead_agencies_query(
-        search_term: str,
-        page: int
-    ):
+    def generate_new_typeahead_agencies_query(search_term: str, page: int):
         offset = (page - 1) * 10
         query = sql.SQL(
             """
@@ -239,7 +235,7 @@ class DynamicQueryConstructor:
         ).format(
             search_term=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
-            offset=sql.Literal(offset)
+            offset=sql.Literal(offset),
         )
         return query
 

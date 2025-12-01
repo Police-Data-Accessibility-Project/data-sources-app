@@ -472,8 +472,7 @@ class DatabaseClient:
     def get_typeahead_locations(self, search_term: str, page: int) -> list[dict]:
         """Return a list of data sources that match the search query."""
         query = DynamicQueryConstructor.generate_like_typeahead_locations_query(
-            search_term,
-            page=page
+            search_term, page=page
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
@@ -494,8 +493,7 @@ class DatabaseClient:
     def get_typeahead_agencies(self, search_term: str, page: int) -> list[dict]:
         """Return a list of data sources that match the search query."""
         query = DynamicQueryConstructor.generate_new_typeahead_agencies_query(
-            search_term,
-            page=page
+            search_term, page=page
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
