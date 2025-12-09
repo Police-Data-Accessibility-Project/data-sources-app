@@ -3,22 +3,13 @@ from typing import Optional
 from flask.testing import FlaskClient
 
 from db.client.core import DatabaseClient
-from db.enums import RequestStatus, ApprovalStatus
-from middleware.enums import JurisdictionType, PermissionsEnum, AgencyType, RecordTypes
-from endpoints.instantiations.agencies_.post.schemas.inner import (
-    AgencyInfoPostSchema,
-)
+from db.enums import RequestStatus
+from middleware.enums import JurisdictionType, PermissionsEnum, RecordTypesEnum
 from tests.helpers.common_endpoint_calls import CreatedDataSource
-from tests.helpers.common_test_data import get_test_name
 from tests.helpers.constants import (
-    AGENCIES_BASE_ENDPOINT,
-    DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_SOURCE_ENDPOINT,
 )
 from tests.helpers.helper_classes.RequestValidator import RequestValidator
-from tests.helpers.helper_classes.SchemaTestDataGenerator import (
-    generate_test_data_from_schema,
-)
 from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
@@ -53,18 +44,13 @@ class TestDataCreatorFlask:
         return self.admin_tus
 
     def data_source(self) -> CreatedDataSource:
-        submitted_name = get_test_name()
         url = self.tdcdb.test_url()
-        json = self.request_validator.create_data_source(
-            headers=self.get_admin_tus().jwt_authorization_header,
+        cdc: CreatedDataSource = self.tdcdb.data_source(
             source_url=url,
-            name=submitted_name,
-            record_type_name=RecordTypes.ARREST_RECORDS.value,
         )
+        return cdc
 
-        return CreatedDataSource(id=json["id"], name=submitted_name, url=url)
-
-    def clear_test_data(self):
+    def clear_test_data(self) -> None:
         tdc_db = TestDataCreatorDBClient()
         tdc_db.clear_test_data()
         # Recreate admin user
@@ -74,7 +60,7 @@ class TestDataCreatorFlask:
         self,
         user_id: int | None = None,
         request_status: RequestStatus | None = RequestStatus.INTAKE,
-        record_type: RecordTypes | None = None,
+        record_type: RecordTypesEnum | None = None,
         location_ids: list[int] | None = None,
     ) -> TestDataRequestInfo:
         return self.tdcdb.data_request(
@@ -84,85 +70,47 @@ class TestDataCreatorFlask:
             location_ids=location_ids,
         )
 
-    def get_sample_agency_post_parameters(
-        self,
-        name,
-        locality_name,
-        jurisdiction_type: JurisdictionType,
-        location_ids: Optional[list[dict]] = None,
-        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
-    ) -> dict:
-        d = {
-            "agency_info": generate_test_data_from_schema(
-                schema=AgencyInfoPostSchema(),
-                override={
-                    "name": name,
-                    "jurisdiction_type": jurisdiction_type.value,
-                    "agency_type": AgencyType.POLICE.value,
-                    "approval_status": approval_status.value,
-                },
-            ),
-        }
-
-        if location_ids is None and jurisdiction_type != JurisdictionType.FEDERAL:
-            location_id = self.locality(
-                locality_name=locality_name,
-            )
-            location_ids = [location_id]
-
-        if location_ids is not None:
-            d["location_ids"] = location_ids
-
-        return d
-
     def agency(
         self,
         location_ids: Optional[list[dict]] = None,
         agency_name: str = "",
         add_test_name: bool = True,
-        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
         jurisdiction_type: JurisdictionType = JurisdictionType.LOCAL,
     ) -> TestAgencyInfo:
         if add_test_name and agency_name == "":
             submitted_name = self.tdcdb.test_name(agency_name)
         else:
             submitted_name = agency_name
-        locality_name = self.tdcdb.test_name()
-        sample_agency_post_parameters = self.get_sample_agency_post_parameters(
+
+        test_agency_info: TestAgencyInfo = self.tdcdb.agency(
             name=submitted_name,
-            locality_name=locality_name,
             jurisdiction_type=jurisdiction_type,
-            location_ids=location_ids,
-            approval_status=approval_status,
         )
 
-        json = run_and_validate_request(
-            flask_client=self.flask_client,
-            http_method="post",
-            endpoint=AGENCIES_BASE_ENDPOINT,
-            headers=self.get_admin_tus().jwt_authorization_header,
-            json=sample_agency_post_parameters,
-        )
+        if location_ids is not None:
+            for location_id in location_ids:
+                self.tdcdb.db_client.add_location_to_agency(
+                    location_id=location_id,
+                    agency_id=test_agency_info.id,
+                )
 
-        return TestAgencyInfo(id=json["id"], submitted_name=submitted_name)
+        return TestAgencyInfo(id=test_agency_info.id, submitted_name=submitted_name)
 
     def refresh_typeahead_agencies(self):
         self.db_client.execute_raw_sql("CALL refresh_typeahead_agencies();")
 
-    def refresh_typeahead_locations(self):
+    def refresh_typeahead_locations(self) -> None:
         self.db_client.execute_raw_sql("CALL refresh_typeahead_locations();")
 
-    def link_data_source_to_agency(self, data_source_id, agency_id):
-        run_and_validate_request(
-            flask_client=self.flask_client,
-            http_method="post",
-            endpoint=DATA_SOURCES_POST_DELETE_RELATED_AGENCY_ENDPOINT.format(
-                data_source_id=data_source_id, agency_id=agency_id
-            ),
-            headers=self.get_admin_tus().jwt_authorization_header,
+    def link_data_source_to_agency(self, data_source_id: int, agency_id: int) -> None:
+        self.tdcdb.link_data_source_to_agency(
+            data_source_id=data_source_id,
+            agency_id=agency_id,
         )
 
-    def link_data_request_to_data_source(self, data_source_id, data_request_id):
+    def link_data_request_to_data_source(
+        self, data_source_id: int, data_request_id: int
+    ) -> None:
         run_and_validate_request(
             flask_client=self.flask_client,
             http_method="post",
@@ -203,7 +151,7 @@ class TestDataCreatorFlask:
             locality_name=locality_name, state_iso=state_iso, county_name=county_name
         )
 
-    def add_permission(self, user_email: str, permission: PermissionsEnum):
+    def add_permission(self, user_email: str, permission: PermissionsEnum) -> None:
         self.request_validator.update_permissions(
             user_email=user_email,
             headers=self.get_admin_tus().jwt_authorization_header,

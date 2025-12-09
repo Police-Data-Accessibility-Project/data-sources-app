@@ -23,13 +23,9 @@ class User(StandardBase, CreatedAtMixin):
     role: Mapped[text | None]
 
     # Relationships
-    created_agencies = relationship(
-        argument="Agency",
-        back_populates="creator",
-    )
     permissions = relationship(
         argument="Permission",
-        secondary="public.user_permissions",
+        secondary="public.link_users__permissions",
         primaryjoin="User.id == UserPermission.user_id",
         secondaryjoin="UserPermission.permission_id == Permission.id",
     )

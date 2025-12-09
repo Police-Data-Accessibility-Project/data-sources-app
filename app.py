@@ -1,18 +1,22 @@
 import os
 from datetime import timedelta, date, datetime
 
+import uvicorn
 from apscheduler.triggers.interval import IntervalTrigger
+from environs import Env
+from fastapi import FastAPI
+from fastapi.middleware.wsgi import WSGIMiddleware as WSGIMiddlewareFastAPI
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from flask_restx import Api
-from jwt import DecodeError, ExpiredSignatureError
+from starlette.applications import Starlette
+from starlette.middleware.cors import CORSMiddleware
 
 from config import config, oauth, limiter, jwt
 from db.helpers_.psycopg import initialize_psycopg_connection
 from endpoints.instantiations.admin_.routes import namespace_admin
 from endpoints.instantiations.agencies_.routes import namespace_agencies
-from endpoints.instantiations.archives_.route import namespace_archives
 from endpoints.instantiations.auth_.callback import namespace_callback
 from endpoints.instantiations.auth_.login import namespace_login
 from endpoints.instantiations.auth_.refresh_session import namespace_refresh_session
@@ -50,19 +54,20 @@ from endpoints.instantiations.oauth_.login_with_github import (
     namespace_login_with_github,
 )
 from endpoints.instantiations.oauth_.oauth import namespace_oauth
-from endpoints.instantiations.permissions_.routes import namespace_permissions
-from endpoints.instantiations.proposals_.routes import namespace_proposals
 from endpoints.instantiations.search.routes import namespace_search
-from endpoints.instantiations.source_collector.routes import namespace_source_collector
+from endpoints.instantiations.source_collector.routes import (
+    namespace_source_collector,
+)
 from endpoints.instantiations.typeahead_.routes import (
     namespace_typeahead_suggestions,
 )
 from endpoints.instantiations.user.routes import namespace_user
+from endpoints.v3.permissions.routes import permission_router
+from endpoints.v3.source_manager.routes import sm_router
+from endpoints.v3.user.routes import user_router
 from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.scheduled_tasks.manager import SchedulerManager
-from middleware.security.jwt.core import SimpleJWT
 from middleware.util.env import get_env_variable
-from environs import Env
 
 env = Env()
 env.read_env()
@@ -72,7 +77,6 @@ NAMESPACES = [
     namespace_request_reset_password,
     namespace_oauth,
     namespace_reset_token_validation,
-    namespace_archives,
     namespace_agencies,
     namespace_data_source,
     namespace_login,
@@ -83,7 +87,6 @@ NAMESPACES = [
     namespace_auth,
     namespace_link_to_github,
     namespace_login_with_github,
-    namespace_permissions,
     namespace_create_test_user,
     namespace_data_requests,
     namespace_url_checker,
@@ -98,55 +101,10 @@ NAMESPACES = [
     namespace_admin,
     namespace_contact,
     namespace_metadata,
-    namespace_proposals,
     namespace_source_collector,
     namespace_validate_email,
     namespace_resend_validation_email,
 ]
-
-MY_PREFIX = "/api"
-
-
-class WSGIMiddleware(object):
-    """Wrap the application in this middleware and configure the
-    front-end server to add these headers, to let you quietly bind
-    this to a URL other than / and to an HTTP scheme that is
-    different than what is used locally.
-
-    :param app: the WSGI application
-    """
-
-    def __init__(self, app):
-        self.app = app
-
-    def __call__(self, environ, start_response):
-        self.set_up_reverse_proxy(environ)
-        self.inject_user_id(environ)
-        return self.app(environ, start_response)
-
-    def set_up_reverse_proxy(self, environ):
-        script_name = MY_PREFIX
-        environ["SCRIPT_NAME"] = script_name
-        path_info = environ["PATH_INFO"]
-        if path_info.startswith(script_name):
-            environ["PATH_INFO"] = path_info[len(script_name) :]
-
-        scheme = environ.get("HTTP_X_SCHEME", "")
-        if scheme:
-            environ["wsgi.url_scheme"] = scheme
-
-    def inject_user_id(self, environ):
-        auth_header = environ.get("HTTP_AUTHORIZATION", "")
-        if auth_header.startswith("Bearer "):
-            token = auth_header[len("Bearer ") :]
-            try:
-                my_jwt = SimpleJWT.decode(token)
-                environ["HTTP_X_USER_ID"] = my_jwt.other_claims["user_id"]
-                return
-            except (KeyError, DecodeError, ExpiredSignatureError):
-                pass
-
-        environ["HTTP_X_USER_ID"] = "-"
 
 
 def get_flask_app_cookie_encryption_key() -> str:
@@ -160,7 +118,7 @@ class UpdatedJSONProvider(DefaultJSONProvider):
         return super().default(o)
 
 
-def create_app() -> Flask:
+def create_flask_app() -> Flask:
     psycopg2_connection = initialize_psycopg_connection()
     config.connection = psycopg2_connection
     api = get_api_with_namespaces()
@@ -176,7 +134,7 @@ def create_app() -> Flask:
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
     app.secret_key = get_flask_app_cookie_encryption_key()
-    app.wsgi_app = WSGIMiddleware(app.wsgi_app)
+    # app.wsgi_app = WSGIMiddleware(app.wsgi_app)
     CORS(app)
 
     api.init_app(app)
@@ -200,7 +158,6 @@ def create_app() -> Flask:
         )
         scheduler.add_materialized_view_scheduled_job("typeahead_locations", 1)
         scheduler.add_materialized_view_scheduled_job("typeahead_agencies", 2)
-        scheduler.add_materialized_view_scheduled_job("unique_urls", 3)
         scheduler.add_materialized_view_scheduled_job("map_states", 4)
         scheduler.add_materialized_view_scheduled_job("map_counties", 5)
         scheduler.add_materialized_view_scheduled_job("map_localities", 6)
@@ -220,13 +177,64 @@ def get_api_with_namespaces():
         description="The following is the API documentation for the PDAP Data Sources API."
         "\n\nBy accessing our API, you are agreeing to our [Terms of Service](https://docs.pdap.io/meta/operations/legal/terms-of-service). Please read them before you start."
         "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
-        "\n\nTo search the database, go to [pdap.io](https://pdap.io).",
+        "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
+        "\n\nThe new FastAPI API is available at {this_address}/docs",
     )
     for namespace in NAMESPACES:
         api.add_namespace(namespace)
     return api
 
 
+def create_asgi_app() -> Starlette:
+    flask_app = create_flask_app()
+    fast_api_app: FastAPI = create_fast_api_app()
+
+    app = Starlette()
+
+    # Add CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "https://pdap.io",
+            "https://www.pdap.io",
+            "https://data-sources.pdap.dev",
+            "https://pdap.dev",
+            "https://data-sources.pdap.io",
+            # Dev origins
+            "http://localhost:8888",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    app.mount("/api/v3", fast_api_app)
+    app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
+
+    return app
+
+
+def create_fast_api_app() -> FastAPI:
+    fast_api_app = FastAPI(
+        title="PDAP Data Sources API",
+        version="3.0",
+        description="The following is the API documentation for the PDAP Data Sources API."
+        "\n\nBy accessing our API, you are agreeing to our [Terms of Service](https://docs.pdap.io/meta/operations/legal/terms-of-service). Please read them before you start."
+        "\n\nFor API help, consult [our getting started guide.](https://docs.pdap.io/api/introduction)"
+        "\n\nTo search the database, go to [pdap.io](https://pdap.io)."
+        "\n\nThe old Flask API is available at {this_address}/"
+        "",
+    )
+    for router in [sm_router, user_router, permission_router]:
+        fast_api_app.include_router(router)
+
+    return fast_api_app
+
+
 if __name__ == "__main__":
-    app = create_app()
-    app.run(host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"))
+    app = create_asgi_app()
+    uvicorn.run(
+        app,
+        host=os.getenv("FLASK_RUN_HOST", "127.0.0.1"),
+        port=int(os.getenv("FLASK_RUN_PORT", 8000)),
+    )

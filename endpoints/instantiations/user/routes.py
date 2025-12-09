@@ -13,6 +13,8 @@ from middleware.primary_resource_logic.reset_token_queries import (
 )
 from middleware.primary_resource_logic.user_profile import (
     get_owner_data_requests_wrapper,
+)
+from endpoints.instantiations.user.by_id.get.recent_searches.wrapper import (
     get_user_recent_searches,
 )
 from endpoints.instantiations.user.by_id.get.middleware import get_user_by_id_wrapper
@@ -27,7 +29,7 @@ from utilities.namespace import AppNamespaces, create_namespace
 namespace_user = create_namespace(AppNamespaces.USER)
 
 DATA_REQUESTS_PARTIAL_ENDPOINT = "data-requests"
-USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL = f"/api/user/{DATA_REQUESTS_PARTIAL_ENDPOINT}"
+USER_PROFILE_DATA_REQUEST_ENDPOINT_FULL = f"/user/{DATA_REQUESTS_PARTIAL_ENDPOINT}"
 
 
 @namespace_user.route("/update-password")

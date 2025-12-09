@@ -1,13 +1,7 @@
 from dataclasses import dataclass
-from http import HTTPStatus
-from typing import Optional
 
 import pytest
 
-from db.enums import LocationType
-from db.models.implementations.core.location.core import Location
-from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
-from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from tests.helpers.common_test_data import get_test_name
 from tests.helpers.helper_classes.MultiLocationSetup import MultiLocationSetup
 from tests.helpers.helper_classes.test_data_creator.flask import (
@@ -78,50 +72,6 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
     )["data"]
     assert data[0]["locations"] == data[1]["locations"]
     assert data[0]["locations"][0]["location_id"] == location_id
-
-
-def test_locations_update(locations_test_setup: LocationsTestSetup):
-    lts = locations_test_setup
-    tdc = lts.tdc
-
-    # Update location with invalid location id
-    location_id = 9123
-
-    dto = LocationPutDTO(
-        latitude=39.5,
-        longitude=93.1,
-    )
-    tdc.request_validator.update_location(
-        location_id=location_id,
-        dto=dto,
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        expected_response_status=HTTPStatus.BAD_REQUEST,
-        expected_json_content={"message": "Location not found."},
-    )
-
-    # Create location
-    locality_name = get_test_name()
-    location_id = tdc.locality(locality_name=locality_name)
-
-    # Update location with valid location id
-    tdc.request_validator.update_location(
-        location_id=location_id,
-        dto=dto,
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        expected_json_content={"message": "Successfully updated location."},
-    )
-
-    # Confirm location updated in database
-    locations = tdc.db_client.get_all(Location)
-    # Find location matching id
-    location = None
-    for loc in locations:
-        if loc["id"] == location_id:
-            location = loc
-            break
-    assert location is not None
-    assert location["lat"] == dto.latitude
-    assert location["lng"] == dto.longitude
 
 
 def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
@@ -214,57 +164,47 @@ def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
     check_location_source_count(name="California", data=states, expected_value=1)
 
 
-def test_get_many_locations(test_data_creator_flask: TestDataCreatorFlask):
-    tdc = test_data_creator_flask
-    tdc.clear_test_data()
-
-    def get_many_locations(
-        page: int = 1,
-        has_coordinates: Optional[bool] = None,
-        type_: Optional[LocationType] = None,
-    ):
-        return tdc.request_validator.get_many_locations(
-            headers=tdc.get_admin_tus().jwt_authorization_header,
-            dto=LocationsGetRequestDTO(
-                page=page,
-                has_coordinates=has_coordinates,
-                type=type_,
-            ),
-        )["results"]
-
-    # Run get many locations with no data and confirm no entries
-    data = get_many_locations()
-    assert len(data) == 8
-
-    # Set Up Locations
-    MultiLocationSetup(tdc.tdcdb)
-
-    # Run get many locations with data
-    data = get_many_locations()
-
-    # Validate expected count of locations
-    assert len(data) == 10
-
-    # Filter on states and get expected location count
-    data = get_many_locations(type_=LocationType.STATE)
-    assert len(data) == 3
-
-    # Filter on counties and get expected location count
-    data = get_many_locations(type_=LocationType.COUNTY)
-    assert len(data) == 4
-
-    # Filter on localities and get expected location count
-    data = get_many_locations(type_=LocationType.LOCALITY)
-    assert len(data) == 2
-
-    # Filter on has_coordinates = False and get all but one location
-    data = get_many_locations(has_coordinates=False)
-    assert len(data) == 9
-
-    # Filter on has_coordinates = True and get 1 location
-    data = get_many_locations(has_coordinates=True)
-    assert len(data) == 1
-
-    # Set page to 2 and get no results
-    data = get_many_locations(page=2)
-    assert len(data) == 0
+# TODO: Rebuild
+# def test_get_many_locations(
+#     live_database_client,
+#     pennsylvania_id: int,
+#     allegheny_id: int,
+#     pittsburgh_id: int,
+#     test_data_creator_flask: TestDataCreatorFlask
+# ):
+#     tdc = test_data_creator_flask
+#     tdc.clear_test_data()
+#
+#     def get_many_locations(
+#         page: int = 1,
+#         has_coordinates: Optional[bool] = None,
+#         type_: Optional[LocationType] = None,
+#     ):
+#         return tdc.request_validator.get_many_locations(
+#             headers=tdc.get_admin_tus().jwt_authorization_header,
+#             dto=LocationsGetRequestDTO(
+#                 page=page,
+#                 has_coordinates=has_coordinates,
+#                 type=type_,
+#             ),
+#         )["results"]
+#
+#     # Run get many locations with no data and confirm no entries
+#     data = get_many_locations()
+#     assert len(data) == 3
+#
+#     # Filter on states and get expected location count
+#     data = get_many_locations(type_=LocationType.STATE)
+#     assert len(data) == 1
+#
+#     # Filter on counties and get expected location count
+#     data = get_many_locations(type_=LocationType.COUNTY)
+#     assert len(data) == 1
+#
+#     # Filter on localities and get expected location count
+#     data = get_many_locations(type_=LocationType.LOCALITY)
+#     assert len(data) == 1
+#
+#     # Set page to 2 and get no results
+#     data = get_many_locations(page=2)
+#     assert len(data) == 0

@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from middleware.enums import PermissionsEnum
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
@@ -13,7 +14,10 @@ def test_admin_user_create(test_data_creator_flask: TestDataCreatorFlask):
     new_user_data = {
         "email": "newuser@example.com",
         "password": "password123",
-        "permissions": ["read_all_user_info", "db_write"],
+        "permissions": [
+            PermissionsEnum.READ_ALL_USER_INFO.value,
+            PermissionsEnum.DB_WRITE.value,
+        ],
     }
     response = tdc.request_validator.create_user(
         headers=admin_tus.jwt_authorization_header,
@@ -52,7 +56,10 @@ def test_admin_user_get_all(test_data_creator_flask: TestDataCreatorFlask):
             headers=admin_tus.jwt_authorization_header,
             email=f"newuser{i}@example.com",
             password="password123",
-            permissions=["read_all_user_info", "db_write"],
+            permissions=[
+                PermissionsEnum.READ_ALL_USER_INFO.value,
+                PermissionsEnum.DB_WRITE.value,
+            ],
         )
 
     # Get all admin users
@@ -66,8 +73,8 @@ def test_admin_user_get_all(test_data_creator_flask: TestDataCreatorFlask):
     for i in range(3):
         assert "newuser" in data[i]["email"]
         assert data[i]["permissions"] in (
-            ["read_all_user_info", "db_write"],
-            ["db_write", "read_all_user_info"],
+            [PermissionsEnum.READ_ALL_USER_INFO.value, PermissionsEnum.DB_WRITE.value],
+            [PermissionsEnum.DB_WRITE.value, PermissionsEnum.READ_ALL_USER_INFO.value],
         )
 
 
@@ -80,7 +87,10 @@ def test_admin_user_update(test_data_creator_flask: TestDataCreatorFlask):
         headers=admin_tus.jwt_authorization_header,
         email="newuserput@example.com",
         password="password123",
-        permissions=["read_all_user_info", "db_write"],
+        permissions=[
+            PermissionsEnum.READ_ALL_USER_INFO.value,
+            PermissionsEnum.DB_WRITE.value,
+        ],
     )
     new_user_id = response["id"]
 

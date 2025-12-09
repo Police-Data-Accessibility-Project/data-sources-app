@@ -1,4 +1,3 @@
-from db.enums import ApprovalStatus
 from middleware.schema_and_dto.schemas.typeahead.locations import (
     TypeaheadLocationsOuterResponseSchema,
 )
@@ -50,6 +49,15 @@ def test_typeahead_locations(flask_client_with_db):
         del suggestion["location_id"]
 
     assert suggestions == expected_suggestions
+
+    # Add pagination testing
+    suggestions = run_and_validate_request(
+        flask_client=flask_client_with_db,
+        http_method="get",
+        endpoint="/typeahead/locations?query=xyl&page=2",
+        expected_schema=TypeaheadLocationsOuterResponseSchema,
+    )["suggestions"]
+    assert len(suggestions) == 0
 
     # Even the most absurd misspellings should pull back something
     json_content = run_and_validate_request(
@@ -128,20 +136,15 @@ def test_typeahead_agencies_approved(test_data_creator_flask: TestDataCreatorFla
     assert "Qzy" in result["display_name"]
     assert result["id"] == int(agency_id)
 
+    # Add pagination testing
+    json_content = tdc.request_validator.typeahead_agency(query="qzy", page=2)
+    assert len(json_content["suggestions"]) == 0
 
-def test_typeahead_agencies_not_approved(test_data_creator_flask: TestDataCreatorFlask):
-    """
-    Test that GET call to /typeahead/agencies endpoint successfully retrieves data
-    """
-    tdc = test_data_creator_flask
-    tdc.clear_test_data()
-    tdc.locality(locality_name="Hky")
-    agency_id = tdc.agency(agency_name="Hky", approval_status=ApprovalStatus.PENDING).id
-    tdc.refresh_typeahead_agencies()
-
-    json_content = tdc.request_validator.typeahead_agency(
-        query="Hky",
+    # Even the most absurd misspellings should pull back something
+    json_content = run_and_validate_request(
+        flask_client=tdc.flask_client,
+        http_method="get",
+        endpoint="/typeahead/locations?query=AbsolutelyGodawfulMisspelledEntryThatShouldMatchNothing",
+        expected_schema=TypeaheadLocationsOuterResponseSchema,
     )
-
-    for result in json_content["suggestions"]:
-        assert result["id"] != int(agency_id)
+    assert len(json_content["suggestions"]) >= 1

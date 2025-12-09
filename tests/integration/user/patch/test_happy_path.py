@@ -28,7 +28,7 @@ def test_user_patch(test_data_creator_flask: TestDataCreatorFlask):
     }
 
     tdc.request_validator.patch(
-        endpoint=f"/api/user/{user_id}",
+        endpoint=f"/user/{user_id}",
         headers=tus.jwt_authorization_header,
         json={
             "capacities": [

@@ -3,8 +3,6 @@ import itertools
 import pytest
 from marshmallow import ValidationError
 
-from middleware.enums import JurisdictionType, AgencyType
-from endpoints.instantiations.agencies_.post.schemas.outer import AgenciesPostSchema
 from middleware.schema_and_dto.schemas.locations.info.base import (
     LocationInfoSchema,
 )
@@ -66,71 +64,3 @@ def test_location_info_schema_validation_errors():
             with pytest.raises(ValidationError):
                 LocationInfoSchema().load(data_with_nones)
                 pytest.fail(f"Expected validation error for {data}")
-
-
-def test_agencies_post_schema():
-    schema = AgenciesPostSchema()
-
-    def produce_data(
-        jurisdiction_type: JurisdictionType, include_location_info: bool = True
-    ):
-        data = {
-            "agency_info": {
-                "name": "test",
-                "jurisdiction_type": jurisdiction_type.value,
-                "agency_type": AgencyType.POLICE.value,
-            }
-        }
-        if include_location_info:
-            data["location_ids"] = [1]
-        return data
-
-    for jurisdiction_type in JurisdictionType:
-        if jurisdiction_type == JurisdictionType.FEDERAL:
-            # If location info is included, validation should not pass
-            with pytest.raises(ValidationError):
-                schema.load(produce_data(jurisdiction_type))
-            # Conversely, if location info is not included, validation should pass
-            schema.load(produce_data(jurisdiction_type, include_location_info=False))
-        else:
-            # If location info is included, validation should pass
-            schema.load(produce_data(jurisdiction_type))
-            # Conversely, if location info is not included, validation should fail
-            with pytest.raises(ValidationError):
-                schema.load(
-                    produce_data(jurisdiction_type, include_location_info=False)
-                )
-
-
-def test_agencies_put_schema_location_info_only():
-    schema = AgenciesPostSchema()
-    with pytest.raises(ValidationError):
-        schema.load(
-            {
-                "agency_info": None,
-                "location_info": {
-                    "location_type": "Locality",
-                    "state_iso": "CA",
-                    "county_fips": "06001",
-                    "locality_name": "Los Angeles",
-                },
-            }
-        )
-
-
-def test_agencies_put_schema_location_info_and_no_jurisdiction_type():
-    schema = AgenciesPostSchema()
-    with pytest.raises(ValidationError):
-        schema.load(
-            {
-                "agency_info": {
-                    "submitted_name": "test",
-                },
-                "location_info": {
-                    "location_type": "Locality",
-                    "state_iso": "CA",
-                    "county_fips": "06001",
-                    "locality_name": "Los Angeles",
-                },
-            }
-        )

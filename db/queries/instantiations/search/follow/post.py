@@ -3,9 +3,9 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 
 from db.models.exceptions import LocationNotFound
-from db.models.implementations.link import (
+from db.models.implementations.links.follow__record_types import LinkFollowRecordType
+from db.models.implementations.links.user__followed_location import (
     LinkUserFollowedLocation,
-    LinkFollowRecordType,
 )
 from db.queries.instantiations.search.follow.base import FollowBaseQueryBuilder
 
@@ -36,6 +36,7 @@ class CreateFollowQueryBuilder(FollowBaseQueryBuilder):
         except IntegrityError as e:
             if 'not present in table "locations"' in str(e):
                 raise LocationNotFound
+            raise e
 
         # Add all record types to the user's follows, if they don't already exist
         rt_ids = self.record_type_ids

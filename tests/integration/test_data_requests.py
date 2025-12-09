@@ -17,7 +17,7 @@ from endpoints.schema_config.instantiations.data_requests.related_sources.get im
     DataRequestsRelatedSourcesGetEndpointSchemaConfig,
 )
 from middleware.constants import DATA_KEY
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.third_party_interaction_logic.mailgun_.constants import OPERATIONS_EMAIL
 from middleware.util.type_conversion import get_enum_values
 from tests.helpers.common_test_data import (
@@ -51,7 +51,10 @@ def test_data_requests_get(
     tus_creator = tdc.standard_user()
 
     # Creator creates a data request
-    dr_info = tdc.tdcdb.data_request(tus_creator.user_info.user_id)
+    dr_info = tdc.tdcdb.data_request(
+        tus_creator.user_info.user_id,
+        # request_status=RequestStatus.ACTIVE,
+    )
     # Create a data source and associate with that request
     ds_info = tdc.data_source()
     tdc.link_data_request_to_data_source(
@@ -60,12 +63,9 @@ def test_data_requests_get(
     )
 
     # Add another data_request, and set its approval status to `Active`
-    dr_info_2 = tdc.tdcdb.data_request(tus_creator.user_info.user_id)
-
-    tdc.request_validator.update_data_request(
-        data_request_id=dr_info_2.id,
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        entry_data={"request_status": "Active"},
+    dr_info_2 = tdc.tdcdb.data_request(
+        tus_creator.user_info.user_id,
+        request_status=RequestStatus.ACTIVE,
     )
 
     data = tdc.request_validator.get_data_requests(
@@ -75,13 +75,10 @@ def test_data_requests_get(
     assert len(data) == 2
 
     # Add another data request, set its approval status to `Archived`
-    # THen perform a search for both Active and Archived
-    dr_info_3 = tdc.tdcdb.data_request(tus_creator.user_info.user_id)
-
-    tdc.request_validator.update_data_request(
-        data_request_id=dr_info_3.id,
-        headers=tdc.get_admin_tus().jwt_authorization_header,
-        entry_data={"request_status": "Archived"},
+    # Then perform a search for both Active and Archived
+    _ = tdc.tdcdb.data_request(
+        tus_creator.user_info.user_id,
+        request_status=RequestStatus.ARCHIVED,
     )
 
     data = tdc.request_validator.get_data_requests(
@@ -378,7 +375,7 @@ def test_data_requests_by_id_put(
                 "github_issue_url": uuid.uuid4().hex,
                 "github_issue_number": get_random_number_for_testing(),
                 "pdap_response": uuid.uuid4().hex,
-                "record_types_required": get_enum_values(RecordTypes),
+                "record_types_required": get_enum_values(RecordTypesEnum),
             }
         },
     )
@@ -596,7 +593,7 @@ def test_data_request_by_id_related_sources(
 
 
 def test_link_unlink_data_requests_with_locations(
-    test_data_creator_flask: TestDataCreatorFlask,
+    test_data_creator_flask: TestDataCreatorFlask, pittsburgh_id: int
 ):
     tdc = test_data_creator_flask
     cdr = tdc.tdcdb.data_request()
@@ -624,7 +621,7 @@ def test_link_unlink_data_requests_with_locations(
     assert data == []
 
     # Add location
-    location_id = tdc.locality("Pittsburgh")
+    location_id = pittsburgh_id
 
     def post_location_association(
         tus: TestUserSetup = admin_tus,

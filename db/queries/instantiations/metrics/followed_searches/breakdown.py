@@ -2,11 +2,15 @@ from sqlalchemy import func, select, case, and_, text
 from werkzeug.exceptions import BadRequest
 
 from db.constants import GET_METRICS_FOLLOWED_SEARCHES_BREAKDOWN_SORTABLE_COLUMNS
-from db.enums import ApprovalStatus, RequestStatus
-from db.models.implementations import (
-    LinkUserFollowedLocation,
+from db.enums import RequestStatus
+from db.models.implementations.links.location__data_source_view import (
     LinkLocationDataSourceView,
+)
+from db.models.implementations.links.location__data_request import (
     LinkLocationDataRequest,
+)
+from db.models.implementations.links.user__followed_location import (
+    LinkUserFollowedLocation,
 )
 from db.models.implementations.core.data_request.core import DataRequest
 from db.models.implementations.core.data_source.core import DataSource
@@ -94,7 +98,6 @@ class GetMetricsFollowedSearchesBreakdownQueryBuilder(QueryBuilderBase):
                 )
                 .join(link, link.location_id == dlsq.dependent_location_id)
                 .join(ds, ds.id == link.data_source_id)
-                .where(ds.approval_status == ApprovalStatus.APPROVED.value)
                 .group_by(dlsq.location_id)
                 .cte("source_counts")
             )

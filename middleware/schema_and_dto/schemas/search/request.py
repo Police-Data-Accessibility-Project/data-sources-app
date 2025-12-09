@@ -16,12 +16,10 @@ class SearchRequestSchema(Schema):
         metadata=get_query_metadata("The location ID of the search."),
     )
     record_categories = fields.Str(
-        required=False,
-        metadata=RECORD_CATEGORY_METADATA,
+        required=False, metadata=RECORD_CATEGORY_METADATA, default=None
     )
     record_types = fields.Str(
-        required=False,
-        metadata=RECORD_TYPE_METADATA,
+        required=False, metadata=RECORD_TYPE_METADATA, default=None
     )
 
     output_format = fields.Enum(

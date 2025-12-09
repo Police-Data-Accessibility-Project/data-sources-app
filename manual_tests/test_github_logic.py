@@ -1,5 +1,5 @@
 from db.enums import RequestStatus
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.third_party_interaction_logic.github.label_manager import (
     GithubLabelManager,
 )
@@ -31,7 +31,10 @@ def test_create_issue_with_status():
         title="test",
         body="test",
         status=RequestStatus.READY_TO_START,
-        record_types=[RecordTypes.ARREST_RECORDS, RecordTypes.PERSONNEL_RECORDS],
+        record_types=[
+            RecordTypesEnum.ARREST_RECORDS,
+            RecordTypesEnum.PERSONNEL_RECORDS,
+        ],
     )
 
 

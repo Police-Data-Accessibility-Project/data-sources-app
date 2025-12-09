@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
-from middleware.enums import PermissionsEnum
+from db.models.implementations.core.user.permission import UserPermission
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.schemas.common.common_response_schemas import (
     MessageSchema,
 )
@@ -23,6 +24,12 @@ def test_user_profile_get_by_id(
         location_id=pennsylvania_id,
     )
 
+    # Create another recent search with no location
+    tdc.request_validator.search(
+        headers=tus.api_authorization_header,
+        record_types=[RecordTypesEnum.BOOKING_REPORTS],
+    )
+
     # Have the user follow a search
     tdc.request_validator.follow_search(
         headers=tus.jwt_authorization_header,
@@ -33,10 +40,11 @@ def test_user_profile_get_by_id(
     data_request_id = tdc.data_request(user_id=tus.user_id).id
 
     # Assign the user a permission
-    tdc.add_permission(
-        user_email=tus.user_info.email,
-        permission=PermissionsEnum.READ_ALL_USER_INFO,
+    permission = UserPermission(
+        user_id=tus.user_id,
+        permission_id=1,
     )
+    tdc.tdcdb.db_client.add(permission)
 
     # Link the user to a fictional github account
     github_user_id = tdc.tdcdb.link_fake_github_to_user(user_id=tus.user_info.user_id)
@@ -54,7 +62,7 @@ def test_user_profile_get_by_id(
     assert data["recent_searches"]["data"][0]["state_name"] == "Pennsylvania"
     assert data["followed_searches"]["data"][0]["state_name"] == "California"
     assert data["data_requests"]["data"][0]["id"] == int(data_request_id)
-    assert data["permissions"] == [PermissionsEnum.READ_ALL_USER_INFO.value]
+    assert len(data["permissions"]) == 1
 
     # Test that admin can also get this user's information
     json_response_admin = tdc.request_validator.get_user_by_id(

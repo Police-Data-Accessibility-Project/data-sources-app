@@ -5,10 +5,6 @@ WRITE_ONLY_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.JWT],
     restrict_to_permissions=[PermissionsEnum.DB_WRITE],
 )
-ARCHIVE_WRITE_AUTH_INFO = AuthenticationInfo(
-    allowed_access_methods=[AccessTypeEnum.JWT],
-    restrict_to_permissions=[PermissionsEnum.ARCHIVE_WRITE],
-)
 STANDARD_JWT_AUTH_INFO = AuthenticationInfo(
     allowed_access_methods=[AccessTypeEnum.JWT],
 )

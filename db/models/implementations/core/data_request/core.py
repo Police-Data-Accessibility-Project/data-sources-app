@@ -55,7 +55,7 @@ class DataRequest(
     # TODO: Is there a way to generalize the below logic?
     locations: Mapped[list["LocationExpanded"]] = relationship(
         argument="LocationExpanded",
-        secondary="public.link_locations_data_requests",
+        secondary="public.link_data_requests__locations",
         primaryjoin="DataRequest.id == LinkLocationDataRequest.data_request_id",
         secondaryjoin="LocationExpanded.id == LinkLocationDataRequest.location_id",
     )
@@ -66,7 +66,7 @@ class DataRequest(
     )
     data_sources: Mapped[list["DataSource"]] = relationship(
         argument="DataSource",
-        secondary="public.link_data_sources_data_requests",
+        secondary="public.link_data_requests__data_sources",
         primaryjoin="DataRequest.id == LinkDataSourceDataRequest.request_id",
         secondaryjoin="DataSource.id == LinkDataSourceDataRequest.data_source_id",
     )

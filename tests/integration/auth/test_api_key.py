@@ -52,5 +52,5 @@ def test_api_key_not_found(test_data_creator_flask: TestDataCreatorFlask):
         http_method="get",
         endpoint="/agencies",
         headers={"Authorization": "Basic bad_api_key"},
-        expected_response_status=HTTPStatus.UNAUTHORIZED,
+        expected_response_status=HTTPStatus.BAD_REQUEST,
     )

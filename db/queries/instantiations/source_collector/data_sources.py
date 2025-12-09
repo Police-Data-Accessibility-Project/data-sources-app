@@ -1,7 +1,6 @@
 import sqlalchemy
 
-from db.enums import ApprovalStatus
-from db.models.implementations import LinkAgencyDataSource
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.record.type import RecordType
 from db.queries.builder.core import QueryBuilderBase
@@ -42,14 +41,11 @@ class AddDataSourcesFromSourceCollectorQueryBuilder(
                 data_source_db = DataSource(
                     name=data_source.name,
                     description=data_source.description,
-                    approval_status=ApprovalStatus.APPROVED.value,
                     source_url=data_source.source_url,
                     record_type_id=record_type_cache[data_source.record_type.value],
                     record_formats=data_source.record_formats,
                     data_portal_type=data_source.data_portal_type,
-                    last_approval_editor=data_source.last_approval_editor,
                     supplying_entity=data_source.supplying_entity,
-                    submission_notes="Auto-submitted from Source Collector",
                 )
                 self.session.add(data_source_db)
                 self.session.flush()  # Execute the insert immediately

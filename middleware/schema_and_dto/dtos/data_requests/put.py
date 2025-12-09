@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from db.enums import RequestUrgency, RequestStatus
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 
 
 class DataRequestsPutDTO(BaseModel):
@@ -15,7 +15,7 @@ class DataRequestsPutDTO(BaseModel):
     github_issue_url: str | None = None
     github_issue_number: str | int | None = None
     internal_notes: str | None = None
-    record_types_required: list[RecordTypes] | None = None
+    record_types_required: list[RecordTypesEnum] | None = None
     pdap_response: str | None = None
 
 

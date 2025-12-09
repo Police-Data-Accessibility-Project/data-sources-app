@@ -31,7 +31,7 @@ def test_call_endpoint(monkeypatch, test_data_creator_flask: TestDataCreatorFlas
         mock_redirect_to_github_authorization,
     )
     # Call endpoint
-    test_data_creator_flask.request_validator.get(endpoint="/api/oauth/github")
+    test_data_creator_flask.request_validator.get(endpoint="/oauth/github")
 
     # Assertions
     mock_setup_callback_session.assert_called_once()

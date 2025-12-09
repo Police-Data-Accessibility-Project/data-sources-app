@@ -8,10 +8,10 @@ from db.helpers_.result_formatting import get_display_name
 from endpoints.schema_config.instantiations.search.follow.delete import (
     SearchFollowDeleteEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.search.follow.get import (
+from endpoints.instantiations.search.follow.get.schema_config import (
     SearchFollowGetEndpointSchemaConfig,
 )
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from tests.helpers.constants import SEARCH_FOLLOW_BASE_ENDPOINT
 from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
 from tests.helpers.helper_functions_simple import add_query_params
@@ -102,52 +102,52 @@ def test_search_follow(search_test_setup: SearchTestSetup):
                 "location_id": sts.location_id,
                 "subscriptions_by_category": {
                     RecordCategoryEnum.POLICE.value: [
-                        RecordTypes.ACCIDENT_REPORTS.value,
-                        RecordTypes.ARREST_RECORDS.value,
-                        RecordTypes.CALLS_FOR_SERVICE.value,
-                        RecordTypes.CAR_GPS.value,
-                        RecordTypes.CITATIONS.value,
-                        RecordTypes.DISPATCH_LOGS.value,
-                        RecordTypes.DISPATCH_RECORDINGS.value,
-                        RecordTypes.FIELD_CONTACTS.value,
-                        RecordTypes.INCIDENT_REPORTS.value,
-                        RecordTypes.MISC_POLICE_ACTIVITY.value,
-                        RecordTypes.OFFICER_INVOLVED_SHOOTINGS.value,
-                        RecordTypes.STOPS.value,
-                        RecordTypes.SURVEYS.value,
-                        RecordTypes.USE_OF_FORCE_REPORTS.value,
-                        RecordTypes.VEHICLE_PURSUITS.value,
+                        RecordTypesEnum.ACCIDENT_REPORTS.value,
+                        RecordTypesEnum.ARREST_RECORDS.value,
+                        RecordTypesEnum.CALLS_FOR_SERVICE.value,
+                        RecordTypesEnum.CAR_GPS.value,
+                        RecordTypesEnum.CITATIONS.value,
+                        RecordTypesEnum.DISPATCH_LOGS.value,
+                        RecordTypesEnum.DISPATCH_RECORDINGS.value,
+                        RecordTypesEnum.FIELD_CONTACTS.value,
+                        RecordTypesEnum.INCIDENT_REPORTS.value,
+                        RecordTypesEnum.MISC_POLICE_ACTIVITY.value,
+                        RecordTypesEnum.OFFICER_INVOLVED_SHOOTINGS.value,
+                        RecordTypesEnum.STOPS.value,
+                        RecordTypesEnum.SURVEYS.value,
+                        RecordTypesEnum.USE_OF_FORCE_REPORTS.value,
+                        RecordTypesEnum.VEHICLE_PURSUITS.value,
                     ],
                     RecordCategoryEnum.JAIL.value: [
-                        RecordTypes.BOOKING_REPORTS.value,
-                        RecordTypes.COURT_CASES.value,
-                        RecordTypes.INCARCERATION_RECORDS.value,
+                        RecordTypesEnum.BOOKING_REPORTS.value,
+                        RecordTypesEnum.COURT_CASES.value,
+                        RecordTypesEnum.INCARCERATION_RECORDS.value,
                     ],
                     RecordCategoryEnum.OFFICERS.value: [
-                        RecordTypes.COMPLAINTS_MISCONDUCT.value,
-                        RecordTypes.DAILY_ACTIVITY_LOGS.value,
-                        RecordTypes.TRAINING_HIRING_INFO.value,
-                        RecordTypes.PERSONNEL_RECORDS.value,
+                        RecordTypesEnum.COMPLAINTS_MISCONDUCT.value,
+                        RecordTypesEnum.DAILY_ACTIVITY_LOGS.value,
+                        RecordTypesEnum.TRAINING_HIRING_INFO.value,
+                        RecordTypesEnum.PERSONNEL_RECORDS.value,
                     ],
                     RecordCategoryEnum.AGENCIES.value: [
-                        RecordTypes.ANNUAL_MONTHLY_REPORTS.value,
-                        RecordTypes.BUDGETS_FINANCES.value,
-                        RecordTypes.CONTACT_INFO_AGENCY_META.value,
-                        RecordTypes.GEOGRAPHIC.value,
-                        RecordTypes.LIST_OF_DATA_SOURCES.value,
-                        RecordTypes.POLICIES_CONTRACTS.value,
+                        RecordTypesEnum.ANNUAL_MONTHLY_REPORTS.value,
+                        RecordTypesEnum.BUDGETS_FINANCES.value,
+                        RecordTypesEnum.CONTACT_INFO_AGENCY_META.value,
+                        RecordTypesEnum.GEOGRAPHIC.value,
+                        RecordTypesEnum.LIST_OF_DATA_SOURCES.value,
+                        RecordTypesEnum.POLICIES_CONTRACTS.value,
                     ],
                     RecordCategoryEnum.RESOURCE.value: [
-                        RecordTypes.CRIME_MAPS_REPORTS.value,
-                        RecordTypes.CRIME_STATISTICS.value,
-                        RecordTypes.MEDIA_BULLETINS.value,
-                        RecordTypes.RECORDS_REQUEST_INFO.value,
-                        RecordTypes.RESOURCES.value,
-                        RecordTypes.SEX_OFFENDER_REGISTRY.value,
-                        RecordTypes.WANTED_PERSONS.value,
+                        RecordTypesEnum.CRIME_MAPS_REPORTS.value,
+                        RecordTypesEnum.CRIME_STATISTICS.value,
+                        RecordTypesEnum.MEDIA_BULLETINS.value,
+                        RecordTypesEnum.RECORDS_REQUEST_INFO.value,
+                        RecordTypesEnum.RESOURCES.value,
+                        RecordTypesEnum.SEX_OFFENDER_REGISTRY.value,
+                        RecordTypesEnum.WANTED_PERSONS.value,
                     ],
                     RecordCategoryEnum.OTHER.value: [
-                        RecordTypes.OTHER.value,
+                        RecordTypesEnum.OTHER.value,
                     ],
                 },
             }

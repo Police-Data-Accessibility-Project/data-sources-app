@@ -43,17 +43,13 @@ from db.enums import (
     ExternalAccountTypeEnum,
     RequestStatus,
     LocationType,
-    ApprovalStatus,
-    UpdateFrequency,
     UserCapacityEnum,
 )
 from db.exceptions import LocationDoesNotExistError
+from db.helpers_ import session as sh
 from db.helpers_.psycopg import initialize_psycopg_connection
 from db.helpers_.result_formatting import (
     get_expanded_display_name,
-)
-from endpoints.instantiations.data_sources_.get.by_id.agencies.format import (
-    agency_to_data_sources_get_related_agencies_output,
 )
 from db.models.base import Base
 from db.models.implementations.core.agency.core import Agency
@@ -62,8 +58,6 @@ from db.models.implementations.core.data_request.expanded import DataRequestExpa
 from db.models.implementations.core.data_request.github_issue_info import (
     DataRequestsGithubIssueInfo,
 )
-from db.models.implementations.core.data_source.archive import DataSourceArchiveInfo
-from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.data_source.expanded import DataSourceExpanded
 from db.models.implementations.core.distinct_source_url import DistinctSourceURL
 from db.models.implementations.core.external_account import ExternalAccount
@@ -86,30 +80,17 @@ from db.models.implementations.core.reset_token import ResetToken
 from db.models.implementations.core.user.core import User
 from db.models.implementations.core.user.pending import PendingUser
 from db.models.implementations.core.user.permission import UserPermission
-from db.models.implementations.link import (
-    LinkAgencyLocation,
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
+from db.models.implementations.links.agency__location import LinkAgencyLocation
+from db.models.implementations.links.user__followed_location import (
     LinkUserFollowedLocation,
 )
 from db.models.table_reference import (
     SQL_ALCHEMY_TABLE_REFERENCE,
 )
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.instantiations.agencies_.get.by_id.core.query import (
-    GetAgencyByIDQueryBuilder,
-)
-from endpoints.instantiations.agencies_.get.many.query import GetAgenciesQueryBuilder
 from db.queries.instantiations.data_requests.post import DataRequestsPostQueryBuilder
 from db.queries.instantiations.data_requests.put import DataRequestsPutQueryBuilder
-from db.queries.instantiations.data_sources.archive import (
-    GetDataSourcesToArchiveQueryBuilder,
-    ArchiveInfo,
-)
-from endpoints.instantiations.data_sources_.get.by_id.query import (
-    GetDataSourceByIDQueryBuilder,
-)
-from endpoints.instantiations.data_sources_.get.many.query import (
-    GetDataSourcesQueryBuilder,
-)
 from db.queries.instantiations.data_sources.post.single import (
     DataSourcesPostSingleQueryBuilder,
 )
@@ -118,21 +99,9 @@ from db.queries.instantiations.locations.get.many import GetManyLocationsQueryBu
 from db.queries.instantiations.log.most_recent_logged_table_counts import (
     GetMostRecentLoggedTableCountsQueryBuilder,
 )
-from endpoints.instantiations.agencies_.get._shared.dto.base import AgenciesGetDTO
-from endpoints.instantiations.agencies_.post.query import CreateAgencyQueryBuilder
-from endpoints.instantiations.map.locations.queries.counties import (
-    GET_MAP_COUNTIES_QUERY,
-)
 from db.queries.instantiations.map.data_source_count import (
     GET_DATA_SOURCE_COUNT_BY_LOCATION_TYPE_QUERY,
 )
-from endpoints.instantiations.map.data_sources.query import (
-    GET_DATA_SOURCES_FOR_MAP_QUERY,
-)
-from endpoints.instantiations.map.locations.queries.localities import (
-    GET_MAP_LOCALITIES_QUERY,
-)
-from endpoints.instantiations.map.locations.queries.states import GET_MAP_STATES_QUERY
 from db.queries.instantiations.match.agencies import GetSimilarAgenciesQueryBuilder
 from db.queries.instantiations.metrics.followed_searches.breakdown import (
     GetMetricsFollowedSearchesBreakdownQueryBuilder,
@@ -146,16 +115,10 @@ from db.queries.instantiations.notifications.update_queue import (
     OptionallyUpdateUserNotificationQueueQueryBuilder,
 )
 from db.queries.instantiations.search.follow.delete import DeleteFollowQueryBuilder
-from db.queries.instantiations.search.follow.get import (
-    GetUserFollowedSearchesQueryBuilder,
-)
 from db.queries.instantiations.search.follow.post import CreateFollowQueryBuilder
 from db.queries.instantiations.search.record import CreateSearchRecordQueryBuilder
-from db.queries.instantiations.source_collector.data_sources import (
-    AddDataSourcesFromSourceCollectorQueryBuilder,
-)
 from db.queries.instantiations.user.create import CreateNewUserQueryBuilder
-from db.queries.instantiations.user.get_recent_searches import (
+from endpoints.instantiations.user.by_id.get.recent_searches.query import (
     GetUserRecentSearchesQueryBuilder,
 )
 from db.queries.instantiations.util.create_entry_in_table import (
@@ -172,31 +135,36 @@ from db.queries.instantiations.util.select_from_relation.query import (
 )
 from db.queries.models.get_params import GetParams
 from db.subquery_logic import SubqueryParameters
+from endpoints.instantiations.agencies_.get._shared.dto.base import AgenciesGetDTO
+from endpoints.instantiations.agencies_.get.by_id.core.query import (
+    GetAgencyByIDQueryBuilder,
+)
+from endpoints.instantiations.agencies_.get.many.query import GetAgenciesQueryBuilder
+from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
+from endpoints.instantiations.agencies_.post.query import CreateAgencyQueryBuilder
 from endpoints.instantiations.auth_.validate_email.query import (
     ValidateEmailQueryBuilder,
 )
 from endpoints.instantiations.data_requests_.post.dto import DataRequestsPostDTO
-from endpoints.instantiations.source_collector.agencies.sync.query.query import (
-    SourceCollectorSyncAgenciesQueryBuilder,
+from endpoints.instantiations.data_sources_.get.by_id.agencies.format import (
+    agency_to_data_sources_get_related_agencies_output,
 )
-from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
-    SourceCollectorPostRequestInnerDTO,
+from endpoints.instantiations.data_sources_.get.by_id.query import (
+    GetDataSourceByIDQueryBuilder,
 )
-from endpoints.instantiations.source_collector.data_sources.post.dtos.response import (
-    SourceCollectorPostResponseInnerDTO,
+from endpoints.instantiations.data_sources_.get.many.query import (
+    GetDataSourcesQueryBuilder,
 )
-from endpoints.instantiations.source_collector.agencies.sync.dtos.request import (
-    SourceCollectorSyncAgenciesRequestDTO,
+from endpoints.instantiations.map.data_sources.query import (
+    GET_DATA_SOURCES_FOR_MAP_QUERY,
 )
-from endpoints.instantiations.source_collector.data_sources.sync.dtos.request import (
-    SourceCollectorSyncDataSourcesRequestDTO,
+from endpoints.instantiations.map.locations.queries.counties import (
+    GET_MAP_COUNTIES_QUERY,
 )
-from endpoints.instantiations.source_collector.data_sources.sync.dtos.response import (
-    SourceCollectorSyncDataSourcesResponseDTO,
+from endpoints.instantiations.map.locations.queries.localities import (
+    GET_MAP_LOCALITIES_QUERY,
 )
-from endpoints.instantiations.source_collector.data_sources.sync.query.core import (
-    SourceCollectorSyncDataSourcesQueryBuilder,
-)
+from endpoints.instantiations.map.locations.queries.states import GET_MAP_STATES_QUERY
 from endpoints.instantiations.user.by_id.get.dto import (
     UserProfileResponseSchemaInnerDTO,
 )
@@ -207,7 +175,7 @@ from middleware.constants import DATE_FORMAT
 from middleware.enums import (
     PermissionsEnum,
     Relations,
-    RecordTypes,
+    RecordTypesEnum,
 )
 from middleware.exceptions import (
     UserNotFoundError,
@@ -216,7 +184,6 @@ from middleware.miscellaneous.table_count_logic import (
     TableCountReference,
     TableCountReferenceManager,
 )
-from endpoints.instantiations.agencies_.post.dto import AgenciesPostDTO
 from middleware.schema_and_dto.dtos.data_requests.put import DataRequestsPutOuterDTO
 from middleware.schema_and_dto.dtos.data_sources.post import DataSourcesPostDTO
 from middleware.schema_and_dto.dtos.entry_create_update_request import (
@@ -298,23 +265,20 @@ class DatabaseClient:
         session.execute(stmt)
 
     @session_manager_v2
-    def add(self, session: Session, model: Base):
+    def add(self, session: Session, model: Base, return_id: bool = False) -> int | None:
         session.add(model)
+        if return_id:
+            if not hasattr(model, "id"):
+                raise AttributeError("Model must have an id attribute")
+            session.flush()
+            return model.id  # pyright: ignore
+        return None
 
     @session_manager_v2
     def add_many(
         self, session: Session, models: list[Base], return_ids: bool = False
     ) -> list[int] | None:
-        session.add_all(models)
-        if return_ids:
-            if not hasattr(models[0], "id"):
-                raise AttributeError("Models must have an id attribute")
-            session.flush()
-            return [
-                model.id  # pyright: ignore [reportAttributeAccessIssue]
-                for model in models
-            ]
-        return None
+        sh.add_many(session, models=models, return_ids=return_ids)
 
     @session_manager_v2
     def mapping(self, session: Session, query: Executable) -> RowMapping | None:
@@ -447,46 +411,6 @@ class DatabaseClient:
 
         return [self.MapInfo(*result) for result in results]
 
-    def get_data_sources_to_archive(
-        self,
-        update_frequency: UpdateFrequency | None = None,
-        last_archived_before: datetime | None = None,
-        page: int = 1,
-    ) -> list[ArchiveInfo]:
-        """Pulls data sources to be archived by the automatic archives script."""
-        builder = GetDataSourcesToArchiveQueryBuilder(
-            update_frequency=update_frequency,
-            last_archived_before=last_archived_before,
-            page=page,
-        )
-        return self.run_query_builder(builder)
-
-    def update_url_status_to_broken(
-        self, data_source_id: str, broken_as_of: str
-    ) -> None:
-        """
-        Update a data sources' url_status to 'broken'.
-
-        :param data_source_id: The id of the data source.
-        :param broken_as_of: The date when the source was identified as broken.
-        """
-        query = (
-            update(DataSource)
-            .where(DataSource.id == data_source_id)
-            .values(url_status="broken", broken_source_url_as_of=broken_as_of)
-        )
-        self.execute(query)
-
-    def update_last_cached(self, data_source_id: str, last_cached: str) -> None:
-        """Update when a data source was last cached."""
-        d = DataSourceArchiveInfo
-        query = (
-            update(d)
-            .where(d.data_source_id == data_source_id)
-            .values(last_cached=last_cached)
-        )
-        self.execute(query)
-
     DataSourceMatches = namedtuple("DataSourceMatches", ["converted", "ids"])
 
     UserInfo = namedtuple("UserInfo", ["id", "password_digest", "api_key", "email"])
@@ -545,14 +469,16 @@ class DatabaseClient:
         )
 
     @cursor_manager()
-    def get_typeahead_locations(self, search_term: str) -> list[dict]:
+    def get_typeahead_locations(self, search_term: str, page: int) -> list[dict]:
         """Return a list of data sources that match the search query."""
         query = DynamicQueryConstructor.generate_like_typeahead_locations_query(
-            search_term
+            search_term, page=page
         )
         self.cursor.execute(query)
         results = self.cursor.fetchall()
-        if 0 < len(results) <= 10:
+        if 0 < len(results):
+            return results
+        if page > 1:
             return results
 
         fuzzy_match_query = (
@@ -564,12 +490,24 @@ class DatabaseClient:
         return self.cursor.fetchall()
 
     @cursor_manager()
-    def get_typeahead_agencies(self, search_term: str) -> list[dict]:
+    def get_typeahead_agencies(self, search_term: str, page: int) -> list[dict]:
         """Return a list of data sources that match the search query."""
         query = DynamicQueryConstructor.generate_new_typeahead_agencies_query(
-            search_term
+            search_term, page=page
         )
         self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        if len(results) > 0:
+            return results
+        if page > 1:
+            return results
+
+        fuzzy_match_query = (
+            DynamicQueryConstructor.generate_fuzzy_match_typeahead_agencies_query(
+                search_term
+            )
+        )
+        self.cursor.execute(fuzzy_match_query)
         return self.cursor.fetchall()
 
     @cursor_manager()
@@ -577,7 +515,7 @@ class DatabaseClient:
         self,
         location_id: int,
         record_categories: list[RecordCategoryEnum] | None = None,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
     ) -> list[dict[str, Any]]:
         """Search for data sources in the database."""
         check_for_mutually_exclusive_arguments(record_categories, record_types)
@@ -822,7 +760,7 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
         record_categories: list[RecordCategoryEnum] | None = None,
     ) -> None:
         builder = CreateFollowQueryBuilder(
@@ -915,7 +853,6 @@ class DatabaseClient:
         page: int | None = 1,
         limit: int | None = PAGE_SIZE,
         requested_columns: list[str] | None = None,
-        approval_status: ApprovalStatus | None = None,
     ):
         params = GetParams(
             order_by=order_by,
@@ -925,7 +862,6 @@ class DatabaseClient:
         )
         builder = GetAgenciesQueryBuilder(
             params=params,
-            approval_status=approval_status,
         )
         return self.run_query_builder(builder)
 
@@ -943,7 +879,6 @@ class DatabaseClient:
         order_by: OrderByParameters | None = None,
         page: int | None = 1,
         limit: int | None = PAGE_SIZE,
-        approval_status: ApprovalStatus | None = None,
     ):
         builder = GetDataSourcesQueryBuilder(
             data_sources_columns=data_sources_columns,
@@ -951,7 +886,6 @@ class DatabaseClient:
             order_by=order_by,
             page=page,
             limit=limit,
-            approval_status=approval_status,
         )
         return self.run_query_builder(builder)
 
@@ -1068,8 +1002,6 @@ class DatabaseClient:
 
     delete_data_request = partialmethod(_delete_from_table, table_name="data_requests")
 
-    delete_agency = partialmethod(_delete_from_table, table_name="agencies")
-
     delete_data_source = partialmethod(_delete_from_table, table_name="data_sources")
 
     delete_request_source_relation = partialmethod(
@@ -1084,7 +1016,7 @@ class DatabaseClient:
         self,
         user_id: int,
         location_id: int,
-        record_types: list[RecordTypes] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
         record_categories: list[RecordCategoryEnum] | None = None,
     ):
         builder = DeleteFollowQueryBuilder(
@@ -1095,9 +1027,15 @@ class DatabaseClient:
         )
         return self.run_query_builder(builder)
 
-    delete_data_source_agency_relation = partialmethod(
-        _delete_from_table, table_name=Relations.LINK_AGENCIES_DATA_SOURCES.value
-    )
+    @session_manager_v2
+    def delete_data_source_agency_relation(
+        self, session: Session, agency_id: int, data_source_id: int
+    ) -> None:
+        statement = delete(LinkAgencyDataSource).where(
+            LinkAgencyDataSource.agency_id == agency_id,
+            LinkAgencyDataSource.data_source_id == data_source_id,
+        )
+        session.execute(statement)
 
     @cursor_manager()
     def check_for_url_duplicates(self, url: str) -> list[dict]:
@@ -1166,11 +1104,6 @@ class DatabaseClient:
             subquery_parameters=subquery_parameters,
         )
         return linked_results
-
-    def get_user_followed_searches(self, user_id: int) -> dict[str, Any]:
-        return self.run_query_builder(
-            GetUserFollowedSearchesQueryBuilder(user_id=user_id)
-        )
 
     DataRequestIssueInfo = namedtuple(
         "DataRequestIssueInfo",
@@ -1244,7 +1177,7 @@ class DatabaseClient:
         user_id: int,
         location_id: int,
         record_categories: list[RecordCategoryEnum] | RecordCategoryEnum | None = None,
-        record_types: list[RecordTypes] | RecordTypes | None = None,
+        record_types: list[RecordTypesEnum] | RecordTypesEnum | None = None,
     ):
         builder = CreateSearchRecordQueryBuilder(
             user_id=user_id,
@@ -1424,15 +1357,6 @@ class DatabaseClient:
 
         return {"record_types": record_types, "record_categories": record_categories}
 
-    def reject_data_source(self, data_source_id: int, rejection_note: str):
-        self.update_data_source(
-            entry_id=data_source_id,
-            column_edit_mappings={
-                "approval_status": ApprovalStatus.REJECTED.value,
-                "rejection_note": rejection_note,
-            },
-        )
-
     @session_manager
     def get_all(self, model: type[Base]):
         def to_dict(instance):
@@ -1443,12 +1367,6 @@ class DatabaseClient:
         results = self.session.query(model).all()
 
         return [to_dict(result) for result in results]
-
-    def add_data_sources_from_source_collector(
-        self, data_sources: list[SourceCollectorPostRequestInnerDTO]
-    ) -> list[SourceCollectorPostResponseInnerDTO]:
-        builder = AddDataSourcesFromSourceCollectorQueryBuilder(data_sources)
-        return self.run_query_builder(builder)
 
     @session_manager
     def update_location_by_id(self, location_id: int, dto: LocationPutDTO):
@@ -1546,20 +1464,6 @@ class DatabaseClient:
         )
         existing_urls = self.scalars(stmt)
         return existing_urls
-
-    def get_agencies_for_sync(
-        self, dto: SourceCollectorSyncAgenciesRequestDTO
-    ) -> dict[str, list[dict]]:
-        """Get agencies for source collector sync."""
-        builder = SourceCollectorSyncAgenciesQueryBuilder(dto=dto)
-        return self.run_query_builder(builder)
-
-    def get_data_sources_for_sync(
-        self, dto: SourceCollectorSyncDataSourcesRequestDTO
-    ) -> SourceCollectorSyncDataSourcesResponseDTO:
-        return self.run_query_builder(
-            SourceCollectorSyncDataSourcesQueryBuilder(dto=dto)
-        )
 
     def patch_user(self, user_id: int, dto: UserPatchDTO) -> None:
         builder = UserPatchQueryBuilder(dto=dto, user_id=user_id)

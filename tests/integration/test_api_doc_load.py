@@ -11,7 +11,7 @@ def test_api_doc_load(flask_client_with_db):
     """
 
     response = flask_client_with_db.open(
-        "/api/swagger.json", method="get", follow_redirects=True
+        "/swagger.json", method="get", follow_redirects=True
     )
     assert_response_status(response, HTTPStatus.OK)
     print(response)

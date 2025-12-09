@@ -17,7 +17,7 @@ class DataRequestExpanded(DataRequest):
 
     data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
         argument="DataSourceExpanded",
-        secondary="public.link_data_sources_data_requests",
+        secondary="public.link_data_requests__data_sources",
         primaryjoin="DataRequestExpanded.id == LinkDataSourceDataRequest.request_id",
         secondaryjoin="DataSourceExpanded.id == LinkDataSourceDataRequest.data_source_id",
         back_populates="data_requests",

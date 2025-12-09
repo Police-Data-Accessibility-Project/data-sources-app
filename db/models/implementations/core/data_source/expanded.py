@@ -18,7 +18,7 @@ class DataSourceExpanded(DataSource):
 
     agencies: Mapped[list[Agency]] = relationship(
         argument="Agency",
-        secondary="public.link_agencies_data_sources",
+        secondary="public.link_agencies__data_sources",
         primaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
         secondaryjoin="LinkAgencyDataSource.agency_id == Agency.id",
         back_populates="data_sources",
@@ -26,7 +26,7 @@ class DataSourceExpanded(DataSource):
 
     data_requests: Mapped[list[DataRequestExpanded]] = relationship(
         argument="DataRequestExpanded",
-        secondary="public.link_data_sources_data_requests",
+        secondary="public.link_data_requests__data_sources",
         primaryjoin="LinkDataSourceDataRequest.data_source_id == DataSourceExpanded.id",
         secondaryjoin="LinkDataSourceDataRequest.request_id == DataRequestExpanded.id",
         back_populates="data_sources",

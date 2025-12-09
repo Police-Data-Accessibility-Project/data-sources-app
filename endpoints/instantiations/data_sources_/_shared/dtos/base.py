@@ -9,7 +9,6 @@ from db.enums import (
     AccessType,
     UpdateMethod,
     RetentionSchedule,
-    ApprovalStatus,
     URLStatus,
 )
 from middleware.schema_and_dto.dtos._helpers import (
@@ -120,9 +119,6 @@ class DataSourceBaseDTO(BaseModel):
     )
     url_status: Optional[URLStatus] = default_field_not_required(
         description="Status of the source URL. Editable only by admins."
-    )
-    approval_status: ApprovalStatus = default_field_not_required(
-        description="The approval status of the data source. Editable only by admins."
     )
     record_type_id: Optional[int] = default_field_not_required(
         description="The id of the record type for this data source."

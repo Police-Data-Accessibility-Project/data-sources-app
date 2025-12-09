@@ -49,12 +49,13 @@ Previously, SQLAlchemy CTEs and Subqueries were created and referenced via `.c.[
 Instead, CTEs and Subqueries should be wrapped in classes positioned in separate `cte.py` files or `cte` subdirectories, where individual columns can be referenced via type-hinted properties that internally reference the `CTE` or `Subquery` attributes via `.c` access. These can then be imported into relevant files.
 
 Example:
+
 ```python
 from typing import final
 
 from sqlalchemy import select, func
 
-from db.models.implementations import LinkAgencyDataSource
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 
 
 @final
@@ -65,11 +66,11 @@ class AgencyIdsCTE:
             func.unnest(LinkAgencyDataSource.agency_id).label("agency_ids"),
             LinkAgencyDataSource.data_source_id,
         ).cte(name="agency_ids")
-        
+
     @property
     def agency_ids(self) -> list[int]:
         return self.query.c.agency_ids
-    
+
     @property
     def data_source_id(self) -> int:
         return self.query.c.data_source_id

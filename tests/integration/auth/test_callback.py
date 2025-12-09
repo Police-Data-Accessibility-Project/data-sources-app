@@ -12,7 +12,7 @@ def test_callback(monkeypatch, test_data_creator_flask: TestDataCreatorFlask):
     monkeypatch.setattr(Callback, "run_endpoint", mock_run_endpoint)
 
     # Call endpoint
-    test_data_creator_flask.request_validator.get(endpoint="/api/auth/callback")
+    test_data_creator_flask.request_validator.get(endpoint="/auth/callback")
 
     # Assert
     mock_run_endpoint.assert_called_once()

@@ -1,20 +1,15 @@
 from flask import Response
 
 from config import limiter
-from db.client.core import DatabaseClient
+from endpoints._helpers.docs import column_permissions_description
+from endpoints._helpers.response_info import ResponseInfo
+from endpoints.psycopg_resource import PsycopgResource
+from endpoints.schema_config.enums import SchemaConfigs
 from endpoints.schema_config.instantiations.agencies.by_id.get import (
     AgenciesByIDGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.agencies.get_many import (
     AgenciesGetManyEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.agencies.post import (
-    AgenciesPostEndpointSchemaConfig,
-)
-from middleware.security.access_info.primary import AccessInfoPrimary
-from middleware.security.auth.info.instantiations import (
-    WRITE_ONLY_AUTH_INFO,
-    API_OR_JWT_AUTH_INFO,
 )
 from middleware.column_permission.format import create_column_permissions_string_table
 from middleware.decorators.endpoint_info import (
@@ -24,16 +19,11 @@ from middleware.enums import Relations
 from middleware.primary_resource_logic.agencies import (
     get_agencies,
     get_agency_by_id,
-    create_agency,
-    delete_agency,
-    add_agency_related_location,
-    remove_agency_related_location,
 )
-from endpoints.instantiations.agencies_.put.middleware import update_agency
-from endpoints.psycopg_resource import PsycopgResource
-from endpoints.schema_config.enums import SchemaConfigs
-from endpoints._helpers.docs import column_permissions_description
-from endpoints._helpers.response_info import ResponseInfo
+from middleware.security.access_info.primary import AccessInfoPrimary
+from middleware.security.auth.info.instantiations import (
+    API_OR_JWT_AUTH_INFO,
+)
 from utilities.namespace import create_namespace, AppNamespaces
 
 namespace_agencies = create_namespace(
@@ -67,21 +57,6 @@ class AgenciesByPage(PsycopgResource):
             access_info=access_info,
         )
 
-    @endpoint_info(
-        namespace=namespace_agencies,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.AGENCIES_POST,
-        response_info=ResponseInfo(
-            success_message="Returns the id of the newly created agency."
-        ),
-    )
-    def post(self, access_info: AccessInfoPrimary):
-        return self.run_endpoint(
-            wrapper_function=create_agency,
-            schema_populate_parameters=AgenciesPostEndpointSchemaConfig.get_schema_populate_parameters(),
-            access_info=access_info,
-        )
-
 
 @namespace_agencies.route("/<resource_id>")
 class AgenciesById(PsycopgResource):
@@ -106,68 +81,4 @@ class AgenciesById(PsycopgResource):
             wrapper_function=get_agency_by_id,
             schema_populate_parameters=AgenciesByIDGetEndpointSchemaConfig.get_schema_populate_parameters(),
             access_info=access_info,
-        )
-
-    @endpoint_info(
-        namespace=namespace_agencies,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.AGENCIES_BY_ID_PUT,
-        response_info=ResponseInfo(
-            success_message="Returns information on the specific agency."
-        ),
-        description="Updates an agency",
-    )
-    def put(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
-        return self.run_endpoint(
-            update_agency,
-            access_info=access_info,
-            agency_id=resource_id,
-        )
-
-    @endpoint_info(
-        namespace=namespace_agencies,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.AGENCIES_BY_ID_DELETE,
-        response_info=ResponseInfo(success_message="Agency successfully deleted."),
-    )
-    def delete(self, resource_id: str, access_info: AccessInfoPrimary) -> Response:
-        return self.run_endpoint(
-            delete_agency, agency_id=resource_id, access_info=access_info
-        )
-
-
-@namespace_agencies.route("/<resource_id>/locations/<location_id>")
-class AgenciesRelatedLocations(PsycopgResource):
-    @endpoint_info(
-        namespace=namespace_agencies,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.AGENCIES_BY_ID_RELATED_LOCATIONS_POST,
-        response_info=ResponseInfo(
-            success_message="Returns locations related to the specific agency."
-        ),
-    )
-    def post(
-        self, resource_id: str, location_id: str, access_info: AccessInfoPrimary
-    ) -> Response:
-        return add_agency_related_location(
-            db_client=DatabaseClient(),
-            agency_id=int(resource_id),
-            location_id=int(location_id),
-        )
-
-    @endpoint_info(
-        namespace=namespace_agencies,
-        auth_info=WRITE_ONLY_AUTH_INFO,
-        schema_config=SchemaConfigs.AGENCIES_BY_ID_RELATED_LOCATIONS_DELETE,
-        response_info=ResponseInfo(
-            success_message="Returns locations related to the specific agency."
-        ),
-    )
-    def delete(
-        self, resource_id: str, location_id: str, access_info: AccessInfoPrimary
-    ) -> Response:
-        return remove_agency_related_location(
-            db_client=DatabaseClient(),
-            agency_id=int(resource_id),
-            location_id=int(location_id),
         )

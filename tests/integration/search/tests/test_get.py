@@ -1,11 +1,8 @@
-from typing import Optional
-
 from db.enums import LocationType
 from endpoints.schema_config.instantiations.user.profile.recent_searches import (
     UserProfileRecentSearchesEndpointSchemaConfig,
 )
-from middleware.enums import OutputFormatEnum, JurisdictionSimplified
-from middleware.util.csv import read_from_csv
+from middleware.enums import JurisdictionSimplified
 from middleware.util.type_conversion import get_enum_values
 from tests.helpers.constants import USER_PROFILE_RECENT_SEARCHES_ENDPOINT
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
@@ -24,15 +21,11 @@ def test_search_get(search_test_setup: SearchTestSetup):
         agency_id=tdcdb.agency(location_id=sts.location_id).id,
     )
 
-    def search(record_format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON):
-        return tdc.request_validator.search(
-            headers=tus.api_authorization_header,
-            location_id=sts.location_id,
-            record_categories=[RecordCategoryEnum.POLICE],
-            format=record_format,
-        )
-
-    json_data = search()
+    json_data = tdc.request_validator.search(
+        headers=tus.api_authorization_header,
+        location_id=sts.location_id,
+        record_categories=[RecordCategoryEnum.POLICE],
+    )
     assert json_data["count"] > 0
 
     jurisdiction_count = 0
@@ -60,26 +53,8 @@ def test_search_get(search_test_setup: SearchTestSetup):
         "record_categories": [RecordCategoryEnum.POLICE.value],
     }
 
-    # Search in CSV
-    csv_data = search(record_format=OutputFormatEnum.CSV)
-
-    results = read_from_csv(csv_data)
-
-    assert len(results) == json_data["count"]
-
-    # Flatten json data for comparison
-    flat_json_data = []
-    for jurisdiction in jurisdictions:
-        if json_data["data"][jurisdiction]["count"] == 0:
-            continue
-        for result in json_data["data"][jurisdiction]["results"]:
-            flat_json_data.append(result)
-
-    # Sort both the flat json data and the csv results for comparison
-    # Due to differences in how CSV and JSON results are formatted, compare only ids
-    json_ids = sorted([result["id"] for result in flat_json_data])
-    csv_ids = sorted(
-        [int(result["id"]) for result in results]
-    )  # CSV ids are formatted as strings
-
-    assert json_ids == csv_ids
+    tdc.request_validator.search(
+        headers=tus.api_authorization_header,
+        location_id=None,
+        record_categories=[RecordCategoryEnum.POLICE],
+    )

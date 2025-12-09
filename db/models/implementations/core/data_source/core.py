@@ -13,7 +13,6 @@ from db.enums import (
     DetailLevel,
     UpdateMethod,
     RetentionSchedule,
-    ApprovalStatus,
 )
 from db.models.helpers import (
     make_get_iter_model_list_of_dict,
@@ -23,11 +22,6 @@ from db.models.helpers import (
 from db.models.implementations.core.location.core import Location
 from db.models.mixins import CountMetadata, CreatedAtMixin, IterWithSpecialCasesMixin
 from db.models.templates.standard import StandardBase
-from db.models.types import (
-    text,
-    URLStatusLiteral,
-    timestamp_tz,
-)
 from middleware.enums import Relations
 
 
@@ -56,47 +50,37 @@ class DataSource(
     )
     coverage_start: Mapped[date | None]
     coverage_end: Mapped[date | None]
-    updated_at: Mapped[date | None] = Column(DateTime, default=func.now())
     detail_level: Mapped[DetailLevel | None] = enum_column(
         DetailLevel, name="detail_level"
     )
     # Note: Below is an array of enums in Postgres but this is cumbersome to convey in SQLAlchemy terms
-    access_types = enum_list_column(AccessType, name="access_type")
+    access_types: Mapped[list[AccessType]] = enum_list_column(
+        AccessType, name="access_type"
+    )
     data_portal_type: Mapped[str | None]
     record_formats = Column(ARRAY(String), default=[])
     update_method: Mapped[UpdateMethod | None] = enum_column(
         UpdateMethod, name="update_method"
     )
-    tags = Column(ARRAY(String), default=[])
     readme_url: Mapped[str | None]
     originating_entity: Mapped[str | None]
     retention_schedule: Mapped[RetentionSchedule | None] = enum_column(
         RetentionSchedule, name="retention_schedule"
     )
     scraper_url: Mapped[str | None]
-    submission_notes: Mapped[str | None]
-    rejection_note: Mapped[str | None]
-    last_approval_editor: Mapped[int | None]
-    submitter_contact_info: Mapped[str | None]
     agency_described_not_in_database: Mapped[str | None]
     data_portal_type_other: Mapped[str | None]
-    data_source_request: Mapped[str | None]
-    broken_source_url_as_of: Mapped[date | None]
-    access_notes: Mapped[text | None]
-    url_status: Mapped[URLStatusLiteral] = enum_column(
+    access_notes: Mapped[str | None]
+    url_status: Mapped[URLStatus] = enum_column(
         URLStatus,
         name="url_status_enum",
         default=URLStatus.OK,
     )
-    approval_status: Mapped[ApprovalStatus] = enum_column(
-        ApprovalStatus,
-        name="approval_status",
-        default=ApprovalStatus.PENDING,
-    )
     record_type_id: Mapped[int | None] = mapped_column(
         ForeignKey("public.record_types.id")
     )
-    approval_status_updated_at: Mapped[timestamp_tz | None]
+    internet_archive_url: Mapped[str | None] = mapped_column()
+    updated_at: Mapped[date | None] = Column(DateTime, default=func.now())
 
     # Relationships
     locations: Mapped[list[Location]] = relationship(

@@ -1,12 +1,8 @@
-from db.enums import ApprovalStatus
-from middleware.enums import JurisdictionType, AgencyType, RecordTypes
-from endpoints.instantiations.agencies_.post.schemas.inner import AgencyInfoPostSchema
-from tests.helpers.helper_classes.SchemaTestDataGenerator import (
-    generate_test_data_from_schema,
-)
+from middleware.enums import JurisdictionType, AgencyType, RecordTypesEnum
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
+from tests.helpers.test_dataclasses import TestAgencyInfo
 from utilities.enums import RecordCategoryEnum
 
 
@@ -16,28 +12,17 @@ def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
     # Create two approved federal agencies
     agency_ids = []
     for i in range(2):
-        a_id = tdc.request_validator.create_agency(
-            headers=tdc.get_admin_tus().jwt_authorization_header,
-            agency_post_parameters={
-                "agency_info": generate_test_data_from_schema(
-                    schema=AgencyInfoPostSchema(),
-                    override={
-                        "jurisdiction_type": JurisdictionType.FEDERAL.value,
-                        "approval_status": ApprovalStatus.APPROVED.value,
-                        "agency_type": AgencyType.POLICE.value,
-                    },
-                ),
-            },
+        tai: TestAgencyInfo = tdc.tdcdb.agency(
+            jurisdiction_type=JurisdictionType.FEDERAL,
+            agency_type=AgencyType.POLICE,
         )
-        agency_ids.append(a_id)
+        agency_ids.append(tai.id)
 
     # Link 2 approved data sources to each federal agency
-    record_types = list(RecordTypes)
+    record_types = list(RecordTypesEnum)
     for i in range(2):
         for j in range(2):
-            d_id = tdc.tdcdb.data_source(
-                approval_status=ApprovalStatus.APPROVED, record_type=record_types[j]
-            ).id
+            d_id = tdc.tdcdb.data_source(record_type=record_types[j]).id
             tdc.link_data_source_to_agency(
                 data_source_id=d_id,
                 agency_id=agency_ids[i],

@@ -15,13 +15,13 @@ from sqlalchemy.exc import IntegrityError as IntegrityErrorSA
 
 from config import limiter
 from db.client.core import DatabaseClient
-from db.enums import LocationType, ApprovalStatus
+from db.enums import LocationType
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.county import County
 from db.models.implementations.core.location.locality import Locality
 from db.models.implementations.core.location.us_state import USState
 from db.models.implementations.core.record.type import RecordType
-from middleware.enums import Relations, RecordTypes
+from middleware.enums import Relations, RecordTypesEnum
 from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
@@ -29,12 +29,14 @@ from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
 from tests.helpers.helper_classes.test_data_creator.flask import (
     TestDataCreatorFlask,
 )
-from utilities.common import get_alembic_conn_string, downgrade_to_base
+from tests.helpers.wipe import wipe_database
+from utilities.common import get_alembic_conn_string
 
 # Load environment variables
 dotenv.load_dotenv()
 
 
+# TODO: Redundant with Live Database Client. Consolidate and remove this.
 @pytest.fixture
 def dev_db_client() -> Generator[DatabaseClient, Any, None]:
     db_client = DatabaseClient()
@@ -47,11 +49,11 @@ ClientWithMockDB = namedtuple("ClientWithMockDB", ["client", "mock_db"])
 @pytest.fixture
 def client_with_mock_db(mocker, monkeypatch) -> Generator[ClientWithMockDB, Any, None]:
     """Create a client with a mocked database connection"""
-    from app import create_app
+    from app import create_flask_app
 
     mock_db = mocker.MagicMock()
     monkeypatch.setattr("app.initialize_psycopg_connection", lambda: mock_db)
-    app = create_app()
+    app = create_flask_app()
     app.config["TESTING"] = True
     app.config["PROPAGATE_EXCEPTIONS"] = True
     with app.test_client() as client:
@@ -61,13 +63,13 @@ def client_with_mock_db(mocker, monkeypatch) -> Generator[ClientWithMockDB, Any,
 @pytest.fixture()
 def flask_client_with_db(monkeypatch):
     """Creates a client with database connection"""
-    from app import create_app
+    from app import create_flask_app
 
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
     monkeypatch.setattr(
         "app.get_flask_app_cookie_encryption_key", mock_get_flask_app_secret_key
     )
-    app = create_app()
+    app = create_flask_app()
     app.config["TESTING"] = True
     app.config["PROPAGATE_EXCEPTIONS"] = True
     with app.test_client() as client:
@@ -87,6 +89,9 @@ def bypass_jwt_required(monkeypatch):
 def live_database_client() -> Generator[DatabaseClient, Any, None]:
     """Returns a database client with a live connection to the database"""
     db_client = DatabaseClient()
+    # Wipe database before returning
+    wipe_database(db_client)
+
     yield db_client
 
 
@@ -123,7 +128,7 @@ def test_data_creator_db_client() -> Generator[TestDataCreatorDBClient, Any, Non
 
 @pytest.fixture(scope="session")
 def flask_client(monkeysession):
-    from app import create_app
+    from app import create_flask_app
 
     mock_get_flask_app_secret_key = MagicMock(return_value="test")
     monkeysession.setattr(
@@ -131,7 +136,7 @@ def flask_client(monkeysession):
     )
     mock_scheduler_manager = MagicMock()
     monkeysession.setattr("app.SchedulerManager", mock_scheduler_manager)
-    app = create_app()
+    app = create_flask_app()
     app.config["TESTING"] = True
     app.config["PROPAGATE_EXCEPTIONS"] = True
 
@@ -172,14 +177,17 @@ def setup_database():
         command.upgrade(alembic_cfg, "head")
     except Exception:
         # Downgrade to base and try again
-        downgrade_to_base(alembic_cfg, engine)
         connection = alembic_cfg.attributes["connection"]
         connection.exec_driver_sql("DROP SCHEMA public CASCADE;")
         connection.exec_driver_sql("CREATE SCHEMA public;")
         connection.commit()
         command.upgrade(alembic_cfg, "head")
     yield
-    downgrade_to_base(alembic_cfg, engine)
+    connection = alembic_cfg.attributes["connection"]
+    connection.exec_driver_sql("DROP SCHEMA public CASCADE;")
+    connection.exec_driver_sql("CREATE SCHEMA public;")
+    connection.commit()
+
     # Base.metadata.create_all(engine)
 
 
@@ -207,7 +215,7 @@ def california_id(live_database_client):
 
 
 @pytest.fixture
-def allegheny_id(live_database_client, pennsylvania_id):
+def allegheny_id(live_database_client, pennsylvania_id) -> int:
     query = (
         select(Location.id)
         .where(
@@ -219,7 +227,7 @@ def allegheny_id(live_database_client, pennsylvania_id):
 
 
 @pytest.fixture
-def pittsburgh_id(live_database_client):
+def pittsburgh_id(live_database_client) -> int:
     query = select(County.id).where(County.name == "Allegheny")
     county_id = live_database_client.scalar(query)
 
@@ -240,7 +248,7 @@ def pittsburgh_id(live_database_client):
 
 
 @pytest.fixture
-def national_id(live_database_client):
+def national_id(live_database_client) -> int:
     query = select(Location.id).where(Location.type == LocationType.NATIONAL.value)
     return live_database_client.scalar(query)
 
@@ -251,7 +259,6 @@ def mock_send_via_mailgun(monkeypatch) -> Generator[MagicMock, Any, None]:
         "middleware.primary_resource_logic.contact",
         "middleware.webhook_logic",
         "middleware.primary_resource_logic.data_requests_.post",
-        "middleware.primary_resource_logic.data_sources",
         "middleware.primary_resource_logic.notifications.notifications",
         "endpoints.instantiations.auth_.signup.middleware",
     ]
@@ -270,20 +277,25 @@ def test_agencies(test_data_creator_db_client) -> list[int]:
     tdc = test_data_creator_db_client
     agency_ids = []
     for _ in range(5):
-        agency_ids.append(tdc.agency(approval_status=ApprovalStatus.APPROVED).id)
+        agency_ids.append(tdc.agency().id)
     return agency_ids
 
 
 @pytest.fixture
 def sample_record_type_id(live_database_client) -> int:
     """Returns the ID of the OTHER record type."""
-    query = select(RecordType.id).where(RecordType.name == RecordTypes.OTHER.value)
+    query = select(RecordType.id).where(RecordType.name == RecordTypesEnum.OTHER.value)
     return live_database_client.scalar(query)
 
 
 @pytest.fixture
 def user_admin(test_data_creator_flask) -> TestUserSetup:
     return test_data_creator_flask.get_admin_tus()
+
+
+@pytest.fixture
+def user_standard(test_data_creator_flask) -> TestUserSetup:
+    return test_data_creator_flask.standard_user()
 
 
 @pytest.fixture

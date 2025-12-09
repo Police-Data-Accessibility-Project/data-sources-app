@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash
 
 from db.client.core import DatabaseClient
 from db.db_client_dataclasses import WhereMapping
-from db.enums import ApprovalStatus, UserCapacityEnum
+from db.enums import UserCapacityEnum
 from middleware.enums import (
     PermissionsEnum,
     Relations,
@@ -143,7 +143,6 @@ def setup_get_typeahead_suggestion_test_data():
                     name="Xylodammerung Police Agency",
                     jurisdiction_type=JurisdictionType.STATE,
                     agency_type=AgencyType.POLICE,
-                    approval_status=ApprovalStatus.APPROVED,
                 ),
                 location_ids=[location_id],
             )
@@ -190,7 +189,6 @@ def create_admin_test_user_setup(flask_client: FlaskClient) -> TestUserSetup:
             PermissionsEnum.READ_ALL_USER_INFO,
             PermissionsEnum.DB_WRITE,
             PermissionsEnum.USER_CREATE_UPDATE,
-            PermissionsEnum.ARCHIVE_WRITE,
             PermissionsEnum.GITHUB_SYNC,
             PermissionsEnum.SOURCE_COLLECTOR_DATA_SOURCES,
         ],

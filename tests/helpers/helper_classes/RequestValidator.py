@@ -2,9 +2,8 @@
 Class based means to run and validate requests
 """
 
-from datetime import datetime
 from http import HTTPStatus
-from typing import Optional, Type, Union, List
+from typing import Type, Union, List
 
 from flask.testing import FlaskClient
 from marshmallow import Schema
@@ -13,17 +12,12 @@ from db.constants import PAGE_SIZE
 from db.enums import (
     SortOrder,
     RequestStatus,
-    ApprovalStatus,
-    UpdateFrequency,
 )
-from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
-    SourceCollectorSyncAgenciesSchemaConfig,
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
+    DataSourcesByIDGetEndpointSchemaConfig,
 )
-from endpoints.instantiations.source_collector.data_sources.post.dtos.request import (
-    SourceCollectorPostRequestDTO,
-)
-from endpoints.instantiations.source_collector.agencies.sync.dtos.request import (
-    SourceCollectorSyncAgenciesRequestDTO,
+from endpoints.instantiations.map.locations.schema_config import (
+    LocationsMapEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.admin.users.by_id.delete import (
     AdminUsersByIDDeleteEndpointSchemaConfig,
@@ -46,9 +40,6 @@ from endpoints.schema_config.instantiations.agencies.by_id.get import (
 from endpoints.schema_config.instantiations.agencies.get_many import (
     AgenciesGetManyEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.archives.get import (
-    ArchivesGetEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
 from endpoints.schema_config.instantiations.data_requests.by_id.get import (
     DataRequestsByIDGetEndpointSchemaConfig,
@@ -65,12 +56,6 @@ from endpoints.schema_config.instantiations.data_requests.related_locations.dele
 from endpoints.schema_config.instantiations.data_requests.related_locations.post import (
     DataRequestsRelatedLocationsPostEndpointSchemaConfig,
 )
-from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
-    DataSourcesByIDGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
-    DataSourcesByIDRejectEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.data_sources.get_many import (
     DataSourcesGetManyEndpointSchemaConfig,
 )
@@ -80,17 +65,11 @@ from endpoints.schema_config.instantiations.github.synchronize import (
 from endpoints.schema_config.instantiations.locations.by_id.get import (
     LocationsByIDGetEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.locations.by_id.put import (
-    LocationsByIDPutEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.locations.data_requests import (
     LocationsRelatedDataRequestsGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.locations.get_many import (
     LocationsGetManyEndpointSchemaConfig,
-)
-from endpoints.instantiations.map.locations.schema_config import (
-    LocationsMapEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.match import MatchAgencyEndpointSchemaConfig
 from endpoints.schema_config.instantiations.metrics.followed_searches.aggregate import (
@@ -101,9 +80,6 @@ from endpoints.schema_config.instantiations.metrics.followed_searches.breakdown 
 )
 from endpoints.schema_config.instantiations.metrics.get import (
     MetricsGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.proposal_agencies import (
-    ProposalAgenciesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.record_type_and_category import (
     RecordTypeAndCategoryGetEndpointSchemaConfig,
@@ -117,7 +93,7 @@ from endpoints.schema_config.instantiations.search.federal import (
 from endpoints.schema_config.instantiations.search.follow.delete import (
     SearchFollowDeleteEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.search.follow.get import (
+from endpoints.instantiations.search.follow.get.schema_config import (
     SearchFollowGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.search.follow.national import (
@@ -128,9 +104,6 @@ from endpoints.schema_config.instantiations.search.follow.post import (
 )
 from endpoints.schema_config.instantiations.search.location_and_record_type import (
     SearchLocationAndRecordTypeGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.source_collector.data_sources import (
-    SourceCollectorDataSourcesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.source_collector.duplicates import (
     SourceCollectorDuplicatesPostEndpointSchemaConfig,
@@ -144,22 +117,18 @@ from endpoints.schema_config.instantiations.user.profile.data_requests import (
 from endpoints.schema_config.instantiations.user.profile.get import (
     UserProfileGetEndpointSchemaConfig,
 )
-from middleware.constants import DATE_FORMAT
-from middleware.enums import OutputFormatEnum, RecordTypes
+from middleware.enums import OutputFormatEnum, RecordTypesEnum
 from middleware.schema_and_dto.dtos.locations.get import LocationsGetRequestDTO
-from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
 from middleware.schema_and_dto.dtos.metrics import (
     MetricsFollowedSearchesBreakdownRequestDTO,
 )
 from middleware.util.dict import update_if_not_none
-from tests.helpers.common_test_data import get_test_name
 from tests.helpers.constants import (
     DATA_REQUESTS_BY_ID_ENDPOINT,
     AGENCIES_BASE_ENDPOINT,
     DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT,
     DATA_SOURCES_BASE_ENDPOINT,
 )
-from tests.helpers.helper_classes.TestUserSetup import TestUserSetup
 from tests.helpers.helper_functions_simple import (
     get_authorization_header,
     add_query_params,
@@ -178,9 +147,9 @@ class RequestValidator:
         self,
         endpoint: str,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-        expected_schema: Optional[Union[Type[Schema], Schema]] = None,
-        query_parameters: Optional[dict] = None,
+        expected_json_content: dict | None = None,
+        expected_schema: Union[Type[Schema], Schema] | None = None,
+        query_parameters: dict | None = None,
         **request_kwargs,
     ):
         return run_and_validate_request(
@@ -198,9 +167,9 @@ class RequestValidator:
         self,
         endpoint: str,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-        expected_schema: Optional[Union[Type[Schema], Schema]] = None,
-        query_parameters: Optional[dict] = None,
+        expected_json_content: dict | None = None,
+        expected_schema: Union[Type[Schema], Schema] | None = None,
+        query_parameters: dict | None = None,
         **request_kwargs,
     ):
         return run_and_validate_request(
@@ -218,9 +187,9 @@ class RequestValidator:
         self,
         endpoint: str,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-        expected_schema: Optional[Union[Type[Schema], Schema]] = None,
-        query_parameters: Optional[dict] = None,
+        expected_json_content: dict | None = None,
+        expected_schema: Union[Type[Schema], Schema] | None = None,
+        query_parameters: dict | None = None,
         **request_kwargs,
     ):
         return run_and_validate_request(
@@ -238,9 +207,9 @@ class RequestValidator:
         self,
         endpoint: str,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-        expected_schema: Optional[Union[Type[Schema], Schema]] = None,
-        query_parameters: Optional[dict] = None,
+        expected_json_content: dict | None = None,
+        expected_schema: Union[Type[Schema], Schema] | None = None,
+        query_parameters: dict | None = None,
         **request_kwargs,
     ):
         return run_and_validate_request(
@@ -258,9 +227,9 @@ class RequestValidator:
         self,
         endpoint: str,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-        expected_schema: Optional[Union[Type[Schema], Schema]] = None,
-        query_parameters: Optional[dict] = None,
+        expected_json_content: dict | None = None,
+        expected_schema: Union[Type[Schema], Schema] | None = None,
+        query_parameters: dict | None = None,
         **request_kwargs,
     ):
         return run_and_validate_request(
@@ -281,11 +250,11 @@ class RequestValidator:
         email: str,
         password: str,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
         expected_schema: Schema = LoginEndpointSchemaConfig.primary_output_schema,
     ):
         return self.post(
-            endpoint="/api/auth/login",
+            endpoint="/auth/login",
             json={
                 "email": email,
                 "password": password,
@@ -302,7 +271,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.post(
-            endpoint="/api/auth/reset-password",
+            endpoint="/auth/reset-password",
             headers=get_authorization_header(scheme="Bearer", token=token),
             json={"password": password},
             expected_response_status=expected_response_status,
@@ -319,7 +288,7 @@ class RequestValidator:
             "middleware.primary_resource_logic.reset_token_queries.send_password_reset_link"
         )
         self.post(
-            endpoint="/api/auth/request-reset-password",
+            endpoint="/auth/request-reset-password",
             json={"email": email},
             expected_response_status=expected_response_status,
             expected_schema=RequestResetPasswordEndpointSchemaConfig.primary_output_schema,
@@ -334,10 +303,10 @@ class RequestValidator:
         self,
         token: str,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
     ):
         return self.post(
-            endpoint="/api/auth/reset-token-validation",
+            endpoint="/auth/reset-token-validation",
             headers=get_authorization_header(scheme="Bearer", token=token),
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
@@ -347,7 +316,7 @@ class RequestValidator:
         self,
         user_email: str,
         headers: dict,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
     ):
         endpoint = f"/permissions?user_email={user_email}"
         return self.get(
@@ -373,70 +342,39 @@ class RequestValidator:
     def search(
         self,
         headers: dict,
-        location_id: int,
-        record_categories: Optional[list[RecordCategoryEnum]] = None,
-        record_types: Optional[list[RecordTypes]] = None,
-        format: Optional[OutputFormatEnum] = OutputFormatEnum.JSON,
+        location_id: int | None = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
+        format: OutputFormatEnum | None = OutputFormatEnum.JSON,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_schema: Optional[
-            Union[Type[Schema], Schema]
-        ] = SearchLocationAndRecordTypeGetEndpointSchemaConfig.primary_output_schema,
-        expected_json_content: Optional[dict] = None,
-    ):
-        endpoint_base = "/search/search-location-and-record-type"
+        expected_schema: Type[Schema]
+        | Schema
+        | None = SearchLocationAndRecordTypeGetEndpointSchemaConfig.primary_output_schema,
+        expected_json_content: dict | None = None,
+    ) -> dict | None:
+        endpoint_base = "/search"
         query_params = self._get_search_query_params(
             location_id=location_id,
             record_categories=record_categories,
             record_types=record_types,
         )
-        query_params.update({} if format is None else {"output_format": format.value})
         endpoint = add_query_params(
             url=endpoint_base,
             params=query_params,
         )
-        kwargs = {"return_json": True if format == OutputFormatEnum.JSON else False}
         return self.get(
             endpoint=endpoint,
             headers=headers,
             expected_schema=expected_schema,
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
-            **kwargs,
-        )
-
-    def archives_get(
-        self,
-        headers: dict,
-        update_frequency: Optional[UpdateFrequency] = None,
-        last_archived_before: Optional[datetime] = None,
-        page: int = 1,
-    ):
-        endpoint_base = "/archives"
-        if last_archived_before is not None:
-            last_archived_before = last_archived_before.strftime(DATE_FORMAT)
-
-        params = {}
-        d = {
-            "update_frequency": update_frequency,
-            "last_archived_before": last_archived_before,
-            "page": page,
-        }
-        update_if_not_none(dict_to_update=params, secondary_dict=d)
-        url = add_query_params(
-            url=endpoint_base,
-            params=params,
-        )
-        return self.get(
-            endpoint=url,
-            expected_schema=ArchivesGetEndpointSchemaConfig.primary_output_schema,
-            headers=headers,
         )
 
     def federal_search(
         self,
         headers: dict,
         page: int = 1,
-        record_categories: Optional[list[RecordCategoryEnum]] = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
     ):
         endpoint_base = "/search/federal"
         query_params = {"page": page}
@@ -456,10 +394,10 @@ class RequestValidator:
 
     @staticmethod
     def _get_search_query_params(
-        record_categories: Optional[list[RecordCategoryEnum]],
-        location_id: Optional[int] = None,
-        record_types: Optional[list[RecordTypes]] = None,
-    ):
+        record_categories: list[RecordCategoryEnum] | None,
+        location_id: int | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
+    ) -> dict[str, str]:
         if location_id is not None:
             query_params = {
                 "location_id": location_id,
@@ -475,44 +413,12 @@ class RequestValidator:
             query_params["record_types"] = ",".join([rt.value for rt in record_types])
         return query_params
 
-    def create_agency(
-        self,
-        headers: dict,
-        agency_post_parameters: dict,
-    ):
-        return self.post(
-            endpoint="/agencies",
-            headers=headers,
-            json=agency_post_parameters,
-        )["id"]
-
-    def create_data_source(
-        self,
-        headers: dict,
-        source_url: str = "http://src1.com",
-        name: str = get_test_name(),
-        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
-        **kwargs,
-    ):
-        return self.post(
-            endpoint=DATA_SOURCES_BASE_ENDPOINT,
-            headers=headers,
-            json={
-                "entry_data": {
-                    "source_url": source_url,
-                    "name": name,
-                    "approval_status": approval_status.value,
-                    **kwargs,
-                }
-            },
-        )
-
     def follow_national_search(
         self,
         headers: dict,
-        record_categories: Optional[list[RecordCategoryEnum]] = None,
-        record_types: Optional[list[RecordTypes]] = None,
-        expected_json_content: Optional[dict] = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
+        expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         query_params = self._get_search_query_params(
@@ -520,7 +426,7 @@ class RequestValidator:
             record_types=record_types,
         )
         endpoint = add_query_params(
-            url="/api/search/follow/national",
+            url="/search/follow/national",
             params=query_params,
         )
 
@@ -535,9 +441,9 @@ class RequestValidator:
     def unfollow_national_search(
         self,
         headers: dict,
-        record_categories: Optional[list[RecordCategoryEnum]] = None,
-        record_types: Optional[list[RecordTypes]] = None,
-        expected_json_content: Optional[dict] = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
+        expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         query_params = self._get_search_query_params(
@@ -545,7 +451,7 @@ class RequestValidator:
             record_types=record_types,
         )
         endpoint = add_query_params(
-            url="/api/search/follow/national",
+            url="/search/follow/national",
             params=query_params,
         )
 
@@ -561,12 +467,12 @@ class RequestValidator:
         self,
         headers: dict,
         location_id: int,
-        record_categories: Optional[list[RecordCategoryEnum]] = None,
-        record_types: Optional[list[RecordTypes]] = None,
-        expected_json_content: Optional[dict] = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
+        expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
-        endpoint_base = "/api/search/follow"
+        endpoint_base = "/search/follow"
         query_params = self._get_search_query_params(
             location_id=location_id,
             record_categories=record_categories,
@@ -588,12 +494,12 @@ class RequestValidator:
         self,
         headers: dict,
         location_id: int,
-        record_categories: Optional[list[RecordCategoryEnum]] = None,
-        record_types: Optional[list[RecordTypes]] = None,
-        expected_json_content: Optional[dict] = None,
+        record_categories: list[RecordCategoryEnum] | None = None,
+        record_types: list[RecordTypesEnum] | None = None,
+        expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
-        endpoint_base = "/api/search/follow"
+        endpoint_base = "/search/follow"
         query_params = self._get_search_query_params(
             location_id=location_id,
             record_categories=record_categories,
@@ -614,11 +520,11 @@ class RequestValidator:
     def get_followed_searches(
         self,
         headers: dict,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.get(
-            endpoint="/api/search/follow",
+            endpoint="/search/follow",
             headers=headers,
             expected_json_content=expected_json_content,
             expected_response_status=expected_response_status,
@@ -633,30 +539,19 @@ class RequestValidator:
         expected_schema=UserProfileGetEndpointSchemaConfig.primary_output_schema,
     ):
         return self.get(
-            endpoint=f"/api/user/{user_id}",
+            endpoint=f"/user/{user_id}",
             headers=headers,
             expected_schema=expected_schema,
             expected_response_status=expected_response_status,
         )
 
-    def update_data_request(
-        self, data_request_id: int, headers: dict, entry_data: dict
-    ):
-        return self.put(
-            endpoint=DATA_REQUESTS_BY_ID_ENDPOINT.format(
-                data_request_id=data_request_id
-            ),
-            headers=headers,
-            json={"entry_data": entry_data},
-        )
-
     def get_data_requests(
         self,
         headers: dict,
-        sort_by: Optional[str] = None,
-        sort_order: Optional[SortOrder] = None,
-        request_statuses: Optional[list[RequestStatus]] = None,
-        limit: Optional[int] = PAGE_SIZE,
+        sort_by: str | None = None,
+        sort_order: SortOrder | None = None,
+        request_statuses: list[RequestStatus] | None = None,
+        limit: int | None = PAGE_SIZE,
     ):
         query_params = {}
         update_if_not_none(
@@ -673,7 +568,7 @@ class RequestValidator:
             },
         )
         return self.get(
-            endpoint="/api/data-requests",
+            endpoint="/data-requests",
             headers=headers,
             query_parameters=query_params,
             expected_schema=DataRequestsGetManyEndpointSchemaConfig.primary_output_schema,
@@ -686,7 +581,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.post(
-            endpoint="/api/data-requests/{data_request_id}/withdraw".format(
+            endpoint="/data-requests/{data_request_id}/withdraw".format(
                 data_request_id=data_request_id
             ),
             headers=headers,
@@ -717,7 +612,7 @@ class RequestValidator:
         headers: dict,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_schema=DataRequestsRelatedLocationsPostEndpointSchemaConfig.primary_output_schema,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
     ):
         return self.post(
             endpoint=DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT.format(
@@ -736,7 +631,7 @@ class RequestValidator:
         headers: dict,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
         expected_schema=DataRequestsRelatedLocationsDeleteEndpointSchemaConfig.primary_output_schema,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
     ):
         return self.delete(
             endpoint=DATA_REQUESTS_POST_DELETE_RELATED_LOCATIONS_ENDPOINT.format(
@@ -751,11 +646,11 @@ class RequestValidator:
     def get_user_profile_data_requests(
         self,
         headers: dict,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
         limit: int = PAGE_SIZE,
     ):
         return self.get(
-            endpoint=f"/api/user/data-requests?page=1&limit={limit}",
+            endpoint=f"/user/data-requests?page=1&limit={limit}",
             headers=headers,
             expected_json_content=expected_json_content,
             expected_schema=UserProfileDataRequestsGetEndpointSchemaConfig.primary_output_schema,
@@ -764,19 +659,15 @@ class RequestValidator:
     def get_agency(
         self,
         headers: dict,
-        sort_by: Optional[str] = None,
-        sort_order: Optional[SortOrder] = None,
+        sort_by: str | None = None,
+        sort_order: SortOrder | None = None,
         page: int = 1,
         limit: int = PAGE_SIZE,
-        approval_status: Optional[ApprovalStatus] = None,
     ):
         params = {}
         update_if_not_none(
             dict_to_update=params,
             secondary_dict={
-                "approval_status": (
-                    approval_status.value if approval_status is not None else None
-                ),
                 "sort_by": sort_by,
                 "sort_order": sort_order.value if sort_order is not None else None,
                 "page": page,
@@ -796,7 +687,7 @@ class RequestValidator:
 
     def add_location_to_agency(self, headers: dict, agency_id: int, location_id: int):
         return self.post(
-            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            endpoint=f"/agencies/{agency_id}/locations/{location_id}",
             headers=headers,
         )
 
@@ -804,7 +695,7 @@ class RequestValidator:
         self, headers: dict, agency_id: int, location_id: int
     ):
         return self.delete(
-            endpoint=f"/api/agencies/{agency_id}/locations/{location_id}",
+            endpoint=f"/agencies/{agency_id}/locations/{location_id}",
             headers=headers,
         )
 
@@ -816,7 +707,7 @@ class RequestValidator:
         expected_response_status: HTTPStatus = HTTPStatus.OK,
     ):
         return self.post(
-            endpoint="/api/user/update-password",
+            endpoint="/user/update-password",
             headers=headers,
             json={"old_password": old_password, "new_password": new_password},
             expected_response_status=expected_response_status,
@@ -826,17 +717,16 @@ class RequestValidator:
         self,
     ):
         return self.get(
-            endpoint="/api/swagger.json",
+            endpoint="/swagger.json",
         )
 
     def get_data_sources(
         self,
         headers: dict,
-        sort_by: Optional[str] = None,
-        sort_order: Optional[SortOrder] = None,
+        sort_by: str | None = None,
+        sort_order: SortOrder | None = None,
         page: int = 1,
         limit: int = PAGE_SIZE,
-        approval_status: ApprovalStatus = ApprovalStatus.APPROVED,
     ):
         query_params = {}
         update_if_not_none(
@@ -846,7 +736,6 @@ class RequestValidator:
                 "sort_order": sort_order.value if sort_order is not None else None,
                 "page": page,
                 "limit": limit,
-                "approval_status": approval_status.value,
             },
         )
 
@@ -857,32 +746,16 @@ class RequestValidator:
             expected_schema=DataSourcesGetManyEndpointSchemaConfig.primary_output_schema,
         )
 
-    def update_data_source(
-        self,
-        tus: TestUserSetup,
-        data_source_id: int,
-        entry_data: dict,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-    ):
-        return self.put(
-            endpoint=f"/api/data-sources/{data_source_id}",
-            headers=tus.jwt_authorization_header,
-            json={"entry_data": entry_data},
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-
     def get_agency_by_id(self, headers: dict, id: int):
         return self.get(
-            endpoint=f"/api/agencies/{id}",
+            endpoint=f"/agencies/{id}",
             headers=headers,
             expected_schema=AgenciesByIDGetEndpointSchemaConfig.primary_output_schema,
         )
 
     def get_data_source_by_id(self, headers: dict, id: int):
         return self.get(
-            endpoint=f"/api/data-sources/{id}",
+            endpoint=f"/data-sources/{id}",
             headers=headers,
             expected_schema=DataSourcesByIDGetEndpointSchemaConfig.primary_output_schema,
         )
@@ -891,9 +764,9 @@ class RequestValidator:
         self,
         headers: dict,
         name: str,
-        state: Optional[str] = None,
-        county: Optional[str] = None,
-        locality: Optional[str] = None,
+        state: str | None = None,
+        county: str | None = None,
+        locality: str | None = None,
     ):
         data = {
             "name": name,
@@ -907,7 +780,7 @@ class RequestValidator:
             },
         )
         return self.post(
-            endpoint="/api/match/agency",
+            endpoint="/match/agency",
             headers=headers,
             json=data,
             expected_schema=MatchAgencyEndpointSchemaConfig.primary_output_schema,
@@ -919,10 +792,10 @@ class RequestValidator:
         self,
         headers: dict,
         location_id: int,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
     ):
         return self.get(
-            endpoint=f"/api/locations/{location_id}",
+            endpoint=f"/locations/{location_id}",
             headers=headers,
             expected_schema=LocationsByIDGetEndpointSchemaConfig.primary_output_schema,
         )
@@ -933,7 +806,7 @@ class RequestValidator:
         location_id: int,
     ):
         return self.get(
-            endpoint=f"/api/locations/{location_id}/data-requests",
+            endpoint=f"/locations/{location_id}/data-requests",
             headers=headers,
             expected_schema=LocationsRelatedDataRequestsGetEndpointSchemaConfig.primary_output_schema,
         )
@@ -943,21 +816,21 @@ class RequestValidator:
         headers: dict,
     ):
         return self.get(
-            endpoint="/api/metrics",
+            endpoint="/metrics",
             headers=headers,
             expected_schema=MetricsGetEndpointSchemaConfig.primary_output_schema,
         )
 
     def get_user_by_id_admin(self, headers: dict, user_id: str):
         return self.get(
-            endpoint=f"/api/admin/users/{user_id}",
+            endpoint=f"/admin/users/{user_id}",
             headers=headers,
             expected_schema=AdminUsersByIDGetEndpointSchemaConfig.primary_output_schema,
         )
 
     def get_users(self, headers: dict, page: int = 1):
         return self.get(
-            endpoint=f"/api/admin/users?page={page}",
+            endpoint=f"/admin/users?page={page}",
             headers=headers,
             expected_schema=AdminUsersGetManyEndpointSchemaConfig.primary_output_schema,
         )
@@ -970,7 +843,7 @@ class RequestValidator:
         permissions: List[str],
     ):
         return self.post(
-            endpoint="/api/admin/users",
+            endpoint="/admin/users",
             headers=headers,
             json={
                 "email": email,
@@ -982,14 +855,14 @@ class RequestValidator:
 
     def delete_user(self, headers: dict, user_id: str):
         return self.delete(
-            endpoint=f"/api/admin/users/{user_id}",
+            endpoint=f"/admin/users/{user_id}",
             headers=headers,
             expected_schema=AdminUsersByIDDeleteEndpointSchemaConfig.primary_output_schema,
         )
 
     def update_admin_user(self, headers: dict, resource_id: str, password: str):
         return self.put(
-            endpoint=f"/api/admin/users/{resource_id}",
+            endpoint=f"/admin/users/{resource_id}",
             headers=headers,
             json={"password": password},
             expected_schema=AdminUsersByIDPutEndpointSchemaConfig.primary_output_schema,
@@ -997,7 +870,7 @@ class RequestValidator:
 
     def get_record_types_and_categories(self, headers: dict):
         return self.get(
-            endpoint="/api/metadata/record-types-and-categories",
+            endpoint="/metadata/record-types-and-categories",
             headers=headers,
             expected_schema=RecordTypeAndCategoryGetEndpointSchemaConfig.primary_output_schema,
         )
@@ -1008,93 +881,27 @@ class RequestValidator:
         self,
         headers: dict,
         expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
     ) -> dict:
         return self.post(
-            endpoint="/api/github/data-requests/synchronize",
+            endpoint="/github/data-requests/synchronize",
             headers=headers,
             expected_schema=GitHubDataRequestsSynchronizePostEndpointSchemaConfig.primary_output_schema,
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
         )
 
-    def typeahead_agency(self, query: str):
+    def typeahead_agency(self, query: str, page: int = 1):
         return self.get(
-            endpoint=f"/api/typeahead/agencies?query={query}",
+            endpoint=f"/typeahead/agencies?query={query}&page={page}",
             expected_schema=TypeaheadAgenciesEndpointSchemaConfig.primary_output_schema,
         )
 
-    def create_proposal_agency(
-        self,
-        headers: dict,
-        data: dict,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-    ):
-        return self.post(
-            endpoint="/api/proposals/agencies",
-            headers=headers,
-            json=data,
-            expected_schema=ProposalAgenciesPostEndpointSchemaConfig.primary_output_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-
-    def reject_data_source(
-        self,
-        headers: dict,
-        data_source_id: int,
-        rejection_note: str,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-        expected_schema: Schema = DataSourcesByIDRejectEndpointSchemaConfig.primary_output_schema,
-    ):
-        return self.post(
-            endpoint=f"/api/data-sources/{data_source_id}/reject",
-            headers=headers,
-            json={"rejection_note": rejection_note},
-            expected_schema=expected_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-
-    def source_collector_data_sources(
-        self,
-        headers: dict,
-        dto: SourceCollectorPostRequestDTO,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_schema: Schema = SourceCollectorDataSourcesPostEndpointSchemaConfig.primary_output_schema,
-    ):
-        return self.post(
-            endpoint="/api/source-collector/data-sources",
-            headers=headers,
-            json=dto.model_dump(mode="json"),
-            expected_schema=expected_schema,
-            expected_response_status=expected_response_status,
-        )
-
-    def update_location(
-        self,
-        headers: dict,
-        location_id: int,
-        dto: LocationPutDTO,
-        expected_response_status: HTTPStatus = HTTPStatus.OK,
-        expected_json_content: Optional[dict] = None,
-    ):
-        return self.put(
-            endpoint=f"/api/locations/{location_id}",
-            headers=headers,
-            json=dto.model_dump(mode="json"),
-            expected_schema=LocationsByIDPutEndpointSchemaConfig.primary_output_schema,
-            expected_response_status=expected_response_status,
-            expected_json_content=expected_json_content,
-        )
-
     def get_locations_map(
-        self, headers: dict, expected_json_content: Optional[dict] = None
+        self, headers: dict, expected_json_content: dict | None = None
     ):
         return self.get(
-            endpoint="/api/map/locations",
+            endpoint="/map/locations",
             headers=headers,
             expected_schema=LocationsMapEndpointSchemaConfig.primary_output_schema,
             expected_json_content=expected_json_content,
@@ -1104,10 +911,10 @@ class RequestValidator:
         self,
         headers: dict,
         dto: LocationsGetRequestDTO,
-        expected_json_content: Optional[dict] = None,
+        expected_json_content: dict | None = None,
     ):
         return self.get(
-            endpoint="/api/locations",
+            endpoint="/locations",
             headers=headers,
             query_parameters=dto.model_dump(mode="json"),
             expected_schema=LocationsGetManyEndpointSchemaConfig.primary_output_schema,
@@ -1118,7 +925,7 @@ class RequestValidator:
         self, headers: dict, dto: MetricsFollowedSearchesBreakdownRequestDTO
     ):
         return self.get(
-            endpoint="/api/metrics/followed-searches/breakdown",
+            endpoint="/metrics/followed-searches/breakdown",
             headers=headers,
             query_parameters=dto.model_dump(mode="json"),
             expected_schema=MetricsFollowedSearchesBreakdownGetEndpointSchemaConfig.primary_output_schema,
@@ -1126,25 +933,15 @@ class RequestValidator:
 
     def get_metrics_followed_searches_aggregate(self, headers: dict):
         return self.get(
-            endpoint="/api/metrics/followed-searches/aggregate",
+            endpoint="/metrics/followed-searches/aggregate",
             headers=headers,
             expected_schema=MetricsFollowedSearchesAggregateGetEndpointSchemaConfig.primary_output_schema,
         )
 
     def post_source_collector_duplicates(self, headers: dict, urls: List[str]):
         return self.post(
-            endpoint="/api/source-collector/data-sources/duplicates",
+            endpoint="/source-collector/data-sources/duplicates",
             headers=headers,
             json={"urls": urls},
             expected_schema=SourceCollectorDuplicatesPostEndpointSchemaConfig.primary_output_schema,
-        )
-
-    def get_agencies_for_sync(
-        self, headers: dict, dto: SourceCollectorSyncAgenciesRequestDTO
-    ):
-        return self.get(
-            endpoint="/api/source-collector/agencies/sync",
-            headers=headers,
-            query_parameters=dto.model_dump(mode="json"),
-            expected_schema=SourceCollectorSyncAgenciesSchemaConfig.primary_output_schema,
         )

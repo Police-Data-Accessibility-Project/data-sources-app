@@ -27,15 +27,25 @@ from db.models.implementations.core.reset_token import ResetToken
 from db.models.implementations.core.test import TestTable
 from db.models.implementations.core.user.core import User
 from db.models.implementations.core.user.pending import PendingUser
-from db.models.implementations.link import (
-    LinkAgencyDataSource,
-    LinkDataSourceDataRequest,
-    LinkUserFollowedLocation,
-    LinkLocationDataRequest,
-    LinkRecentSearchRecordCategories,
-    LinkRecentSearchRecordTypes,
+from db.models.implementations.links.location__data_source_view import (
     LinkLocationDataSourceView,
 )
+from db.models.implementations.links.recent_search__record_types import (
+    LinkRecentSearchRecordTypes,
+)
+from db.models.implementations.links.recent_search__record_categories import (
+    LinkRecentSearchRecordCategories,
+)
+from db.models.implementations.links.location__data_request import (
+    LinkLocationDataRequest,
+)
+from db.models.implementations.links.user__followed_location import (
+    LinkUserFollowedLocation,
+)
+from db.models.implementations.links.data_source__data_request import (
+    LinkDataSourceDataRequest,
+)
+from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from middleware.enums import Relations
 
 SQL_ALCHEMY_TABLE_REFERENCE = {
@@ -48,7 +58,7 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "data_sources": DataSource,
     "data_sources_expanded": DataSourceExpanded,
     "data_sources_archive_info": DataSourceArchiveInfo,
-    "link_data_sources_data_requests": LinkDataSourceDataRequest,
+    "link_data_requests__data_sources": LinkDataSourceDataRequest,
     "reset_tokens": ResetToken,
     "test_table": TestTable,
     "users": User,

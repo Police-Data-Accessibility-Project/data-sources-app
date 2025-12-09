@@ -18,7 +18,7 @@ from db.models.table_reference import (
     convert_to_column_reference,
 )
 from db.subquery_logic import SubqueryParameters
-from middleware.enums import RecordTypes, Relations
+from middleware.enums import RecordTypesEnum, Relations
 from utilities.enums import RecordCategoryEnum
 
 TableColumn = namedtuple("TableColumn", ["table", "column"])
@@ -112,7 +112,28 @@ class DynamicQueryConstructor:
         return query
 
     @staticmethod
-    def generate_like_typeahead_locations_query(search_term: str) -> sql.Composed:
+    def generate_fuzzy_match_typeahead_agencies_query(search_term: str) -> sql.Composed:
+        query = sql.SQL(
+            """
+            SELECT 
+                id,
+                name as display_name,
+                jurisdiction_type,
+                state_iso,
+                municipality as locality_name,
+                county_name
+            FROM typeahead_agencies
+            ORDER BY similarity(name, {search_term}) DESC
+            LIMIT 10
+            """
+        ).format(search_term=sql.Literal(search_term))
+        return query
+
+    @staticmethod
+    def generate_like_typeahead_locations_query(
+        search_term: str, page: int
+    ) -> sql.Composed:
+        offset = (page - 1) * 10
         query = sql.SQL(
             """
         WITH combined AS (
@@ -151,17 +172,19 @@ class DynamicQueryConstructor:
                 location_id
             FROM combined
             ORDER BY sort_order, display_name
-            LIMIT 10
+            LIMIT 10 OFFSET {offset}
         ) as results;
         """
         ).format(
             search_term_prefix=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
+            offset=sql.Literal(offset),
         )
         return query
 
     @staticmethod
-    def generate_new_typeahead_agencies_query(search_term: str):
+    def generate_new_typeahead_agencies_query(search_term: str, page: int):
+        offset = (page - 1) * 10
         query = sql.SQL(
             """
         WITH combined AS (
@@ -206,12 +229,13 @@ class DynamicQueryConstructor:
                 county_name
             FROM combined
             ORDER BY sort_order, name
-            LIMIT 10
+            LIMIT 10 offset {offset}
         ) as results
         """
         ).format(
             search_term=sql.Literal(f"{search_term}%"),
             search_term_anywhere=sql.Literal(f"%{search_term}%"),
+            offset=sql.Literal(offset),
         )
         return query
 
@@ -235,7 +259,7 @@ class DynamicQueryConstructor:
                 agencies.name AS agency_name,
                 agencies.jurisdiction_type
             FROM
-                LINK_AGENCIES_DATA_SOURCES AS agency_source_link
+                LINK_AGENCIES__DATA_SOURCES AS agency_source_link
             INNER JOIN
                 data_sources ON agency_source_link.data_source_id = data_sources.id
             INNER JOIN
@@ -246,7 +270,6 @@ class DynamicQueryConstructor:
         )
         where_subclauses = [
             sql.SQL("agencies.jurisdiction_type = 'federal'"),
-            sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status != 'broken'"),
         ]
 
@@ -287,7 +310,7 @@ class DynamicQueryConstructor:
     def create_search_query(
         location_id: int,
         record_categories: Optional[list[RecordCategoryEnum]] = None,
-        record_types: Optional[list[RecordTypes]] = None,
+        record_types: Optional[list[RecordTypesEnum]] = None,
     ) -> sql.Composed:
         base_query = sql.SQL(
             """
@@ -325,13 +348,13 @@ class DynamicQueryConstructor:
                 us_states.state_iso,
                 agencies.jurisdiction_type
             FROM
-                LINK_AGENCIES_DATA_SOURCES AS agency_source_link
+                LINK_AGENCIES__DATA_SOURCES AS agency_source_link
                     INNER JOIN
                     data_sources ON agency_source_link.data_source_id = data_sources.id
                     INNER JOIN
                     agencies ON agency_source_link.agency_id = agencies.id
                     LEFT JOIN
-                    link_agencies_locations LAL ON LAL.agency_id = agencies.id
+                    link_agencies__locations LAL ON LAL.agency_id = agencies.id
                     INNER JOIN
                     locations on LAL.location_id = locations.id
                     LEFT JOIN
@@ -347,7 +370,6 @@ class DynamicQueryConstructor:
 
         join_conditions = []
         where_subclauses = [
-            sql.SQL("data_sources.approval_status = 'approved'"),
             sql.SQL("data_sources.url_status != 'broken'"),
         ]
 
@@ -477,9 +499,7 @@ class DynamicQueryConstructor:
         query = sql.SQL(
             """
             SELECT 
-                original_url,
-                rejection_note,
-                approval_status
+                original_url
             FROM distinct_source_urls
             WHERE base_url = {url}
             """

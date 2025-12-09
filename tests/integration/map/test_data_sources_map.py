@@ -1,6 +1,5 @@
 """Integration tests for /map/data-sources endpoint"""
 
-from db.enums import ApprovalStatus
 from endpoints.instantiations.map.data_sources.schema_config import (
     DataSourcesMapEndpointSchemaConfig,
 )
@@ -17,7 +16,7 @@ def test_data_sources_map_get(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask.tdcdb
     tus = tdcf.standard_user()
     location_id = tdc.locality()
-    ds_id = tdc.data_source(approval_status=ApprovalStatus.APPROVED).id
+    ds_id = tdc.data_source().id
     a_id = tdc.agency(
         location_id=location_id,
     ).id
@@ -26,7 +25,7 @@ def test_data_sources_map_get(test_data_creator_flask: TestDataCreatorFlask):
         agency_id=a_id,
     )
     response_json = tdcf.request_validator.get(
-        endpoint="/api/map/data-sources",
+        endpoint="/map/data-sources",
         headers=tus.api_authorization_header,
         expected_schema=DataSourcesMapEndpointSchemaConfig.primary_output_schema,
     )

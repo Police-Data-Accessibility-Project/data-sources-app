@@ -9,10 +9,12 @@ from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
 class MultiLocationSetup:
     def __init__(self, tdc: TestDataCreatorDBClient) -> None:
         self.tdc = tdc
-        self.pittsburgh_id = self.tdc.locality(
-            locality_name="Pittsburgh",
-            county_name="Allegheny",
-            state_iso="PA",
+        self.pittsburgh_id = self.get_location_id(
+            {
+                "locality_name": "Pittsburgh",
+                "county_name": "Allegheny",
+                "state_iso": "PA",
+            }
         )
         self.allegheny_county_id = self.get_location_id(
             {

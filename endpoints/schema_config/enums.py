@@ -1,19 +1,34 @@
 from enum import Enum
 
+from endpoints.instantiations.auth_.resend_validation_email.endpoint_schema_config import (
+    AuthResendValidationEmailEndpointSchemaConfig,
+)
+from endpoints.instantiations.auth_.signup.endpoint_schema_config import (
+    AuthSignupEndpointSchemaConfig,
+)
 from endpoints.instantiations.auth_.validate_email.endpoint_schema_config import (
     AuthValidateEmailEndpointSchema,
+)
+from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
+    DataSourcesByIDGetEndpointSchemaConfig,
+)
+from endpoints.instantiations.data_sources_.post.request_.endpoint_schema_config import (
+    PostDataSourceRequestEndpointSchemaConfig,
 )
 from endpoints.instantiations.map.data.schema_config import (
     LocationsDataEndpointSchemaConfig,
 )
+from endpoints.instantiations.map.data_sources.schema_config import (
+    DataSourcesMapEndpointSchemaConfig,
+)
+from endpoints.instantiations.map.locations.schema_config import (
+    LocationsMapEndpointSchemaConfig,
+)
+from endpoints.instantiations.search.core.endpoint_schema_config import (
+    SearchGetEndpointSchemaConfig,
+)
 from endpoints.instantiations.source_collector.agencies.search.locations.schema_config import (
     SourceCollectorAgencySearchLocationSchemaConfig,
-)
-from endpoints.instantiations.source_collector.agencies.sync.schema_config import (
-    SourceCollectorSyncAgenciesSchemaConfig,
-)
-from endpoints.instantiations.source_collector.data_sources.sync.schema_config import (
-    SourceCollectorSyncDataSourceSchemaConfig,
 )
 from endpoints.instantiations.user.by_id.patch.endpoint_schema_config import (
     UserPatchEndpointSchemaConfig,
@@ -31,35 +46,14 @@ from endpoints.schema_config.instantiations.admin.users.get_many import (
 from endpoints.schema_config.instantiations.admin.users.post import (
     AdminUsersPostEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.agencies.by_id.delete import (
-    AgenciesByIDDeleteEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.agencies.by_id.get import (
     AgenciesByIDGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.agencies.by_id.put import (
-    AgenciesByIDPutEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.agencies.by_id.related_locations.delete import (
-    AgenciesByIDRelatedLocationsDeleteEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.agencies.by_id.related_locations.post import (
-    AgenciesByIDRelatedLocationsPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.agencies.get_many import (
     AgenciesGetManyEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.agencies.post import (
-    AgenciesPostEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.api_key import (
     ApiKeyPostEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.archives.get import (
-    ArchivesGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.archives.put import (
-    ArchivesPutEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.github.link import (
     AuthGithubLinkEndpointSchemaConfig,
@@ -71,13 +65,6 @@ from endpoints.schema_config.instantiations.auth.github.oauth import (
     AuthGitHubOAuthEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.auth.login import LoginEndpointSchemaConfig
-from endpoints.instantiations.auth_.resend_validation_email.endpoint_schema_config import (
-    AuthResendValidationEmailEndpointSchemaConfig,
-)
-from endpoints.instantiations.auth_.signup.endpoint_schema_config import (
-    AuthSignupEndpointSchemaConfig,
-)
-
 from endpoints.schema_config.instantiations.checker import (
     UniqueURLCheckerEndpointSchemaConfig,
 )
@@ -117,35 +104,11 @@ from endpoints.schema_config.instantiations.data_requests.related_sources.get im
 from endpoints.schema_config.instantiations.data_requests.related_sources.post import (
     DataRequestsRelatedSourcesPost,
 )
-from endpoints.schema_config.instantiations.data_sources.by_id.agencies.delete import (
-    DataSourcesRelatedAgenciesDeleteEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.data_sources.by_id.agencies.get import (
     DataSourcesRelatedAgenciesGet,
 )
-from endpoints.schema_config.instantiations.data_sources.by_id.agencies.post import (
-    DataSourcesRelatedAgenciesPostEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.data_sources.by_id.delete import (
-    DataSourcesByIDDeleteEndpointSchemaConfig,
-)
-from endpoints.instantiations.data_sources_.get.by_id.schema_config import (
-    DataSourcesByIDGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.data_sources.by_id.put import (
-    DataSourcesByIDPutEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.data_sources.by_id.reject import (
-    DataSourcesByIDRejectEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.data_sources.get_many import (
     DataSourcesGetManyEndpointSchemaConfig,
-)
-from endpoints.instantiations.map.data_sources.schema_config import (
-    DataSourcesMapEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.data_sources.post import (
-    DataSourcesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.github.synchronize import (
     GitHubDataRequestsSynchronizePostEndpointSchemaConfig,
@@ -153,17 +116,11 @@ from endpoints.schema_config.instantiations.github.synchronize import (
 from endpoints.schema_config.instantiations.locations.by_id.get import (
     LocationsByIDGetEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.locations.by_id.put import (
-    LocationsByIDPutEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.locations.data_requests import (
     LocationsRelatedDataRequestsGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.locations.get_many import (
     LocationsGetManyEndpointSchemaConfig,
-)
-from endpoints.instantiations.map.locations.schema_config import (
-    LocationsMapEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.match import MatchAgencyEndpointSchemaConfig
 from endpoints.schema_config.instantiations.metrics.followed_searches.aggregate import (
@@ -180,15 +137,6 @@ from endpoints.schema_config.instantiations.notifications_.core import (
 )
 from endpoints.schema_config.instantiations.notifications_.preview import (
     NotificationsPreviewEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.permissions.get import (
-    PermissionsGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.permissions.put import (
-    PermissionsPutEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.proposal_agencies import (
-    ProposalAgenciesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.record_type_and_category import (
     RecordTypeAndCategoryGetEndpointSchemaConfig,
@@ -208,7 +156,7 @@ from endpoints.schema_config.instantiations.search.federal import (
 from endpoints.schema_config.instantiations.search.follow.delete import (
     SearchFollowDeleteEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.search.follow.get import (
+from endpoints.instantiations.search.follow.get.schema_config import (
     SearchFollowGetEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.search.follow.national import (
@@ -219,9 +167,6 @@ from endpoints.schema_config.instantiations.search.follow.post import (
 )
 from endpoints.schema_config.instantiations.search.location_and_record_type import (
     SearchLocationAndRecordTypeGetEndpointSchemaConfig,
-)
-from endpoints.schema_config.instantiations.source_collector.data_sources import (
-    SourceCollectorDataSourcesPostEndpointSchemaConfig,
 )
 from endpoints.schema_config.instantiations.source_collector.duplicates import (
     SourceCollectorDuplicatesPostEndpointSchemaConfig,
@@ -271,32 +216,14 @@ class SchemaConfigs(Enum):
     # region Agencies
     AGENCIES_BY_ID_GET = AgenciesByIDGetEndpointSchemaConfig
     AGENCIES_GET_MANY = AgenciesGetManyEndpointSchemaConfig
-    AGENCIES_POST = AgenciesPostEndpointSchemaConfig
-    AGENCIES_BY_ID_PUT = AgenciesByIDPutEndpointSchemaConfig
-    AGENCIES_BY_ID_DELETE = AgenciesByIDDeleteEndpointSchemaConfig
-    AGENCIES_BY_ID_RELATED_LOCATIONS_DELETE = (
-        AgenciesByIDRelatedLocationsDeleteEndpointSchemaConfig
-    )
-    AGENCIES_BY_ID_RELATED_LOCATIONS_POST = (
-        AgenciesByIDRelatedLocationsPostEndpointSchemaConfig
-    )
 
     # endregion
     # region Data Sources
+    DATA_SOURCES_POST = PostDataSourceRequestEndpointSchemaConfig
     DATA_SOURCES_GET_MANY = DataSourcesGetManyEndpointSchemaConfig
     DATA_SOURCES_GET_BY_ID = DataSourcesByIDGetEndpointSchemaConfig
-    DATA_SOURCES_BY_ID_DELETE = DataSourcesByIDDeleteEndpointSchemaConfig
-    DATA_SOURCES_POST = DataSourcesPostEndpointSchemaConfig
     DATA_SOURCES_MAP = DataSourcesMapEndpointSchemaConfig
-    DATA_SOURCES_PUT = DataSourcesByIDPutEndpointSchemaConfig
     DATA_SOURCES_RELATED_AGENCIES_GET = DataSourcesRelatedAgenciesGet
-    DATA_SOURCES_RELATED_AGENCIES_POST = (
-        DataSourcesRelatedAgenciesPostEndpointSchemaConfig
-    )
-    DATA_SOURCES_RELATED_AGENCIES_DELETE = (
-        DataSourcesRelatedAgenciesDeleteEndpointSchemaConfig
-    )
-    DATA_SOURCES_BY_ID_REJECT = DataSourcesByIDRejectEndpointSchemaConfig
     # endregion
 
     # region Github
@@ -305,6 +232,7 @@ class SchemaConfigs(Enum):
     )
     # endregion
     # region Search
+    SEARCH_GET = SearchGetEndpointSchemaConfig
     SEARCH_LOCATION_AND_RECORD_TYPE_GET = (
         SearchLocationAndRecordTypeGetEndpointSchemaConfig
     )
@@ -353,22 +281,12 @@ class SchemaConfigs(Enum):
     API_KEY_POST = ApiKeyPostEndpointSchemaConfig
     # endregion
 
-    # region Archives
-    ARCHIVES_GET = ArchivesGetEndpointSchemaConfig
-    ARCHIVES_PUT = ArchivesPutEndpointSchemaConfig
-    # endregion
-
-    # region Permission
-    PERMISSIONS_GET = PermissionsGetEndpointSchemaConfig
-    PERMISSIONS_PUT = PermissionsPutEndpointSchemaConfig
-    # endregion
     # region Match
     MATCH_AGENCY = MatchAgencyEndpointSchemaConfig
     # endregion
 
     # region Location
     LOCATIONS_BY_ID_GET = LocationsByIDGetEndpointSchemaConfig
-    LOCATIONS_BY_ID_PUT = LocationsByIDPutEndpointSchemaConfig
     LOCATIONS_RELATED_DATA_REQUESTS_GET = (
         LocationsRelatedDataRequestsGetEndpointSchemaConfig
     )
@@ -404,15 +322,7 @@ class SchemaConfigs(Enum):
     RECORD_TYPE_AND_CATEGORY_GET = RecordTypeAndCategoryGetEndpointSchemaConfig
     # endregion
 
-    PROPOSAL_AGENCIES_POST = ProposalAgenciesPostEndpointSchemaConfig
-
-    SOURCE_COLLECTOR_DATA_SOURCES_POST = (
-        SourceCollectorDataSourcesPostEndpointSchemaConfig
-    )
-
     SOURCE_COLLECTOR_DUPLICATES_POST = SourceCollectorDuplicatesPostEndpointSchemaConfig
-    SOURCE_COLLECTOR_SYNC_AGENCIES = SourceCollectorSyncAgenciesSchemaConfig
-    SOURCE_COLLECTOR_SYNC_DATA_SOURCES = SourceCollectorSyncDataSourceSchemaConfig
     SOURCE_COLLECTOR_SEARCH_AGENCIES_LOCATION = (
         SourceCollectorAgencySearchLocationSchemaConfig
     )

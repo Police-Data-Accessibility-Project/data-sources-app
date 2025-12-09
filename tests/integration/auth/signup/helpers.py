@@ -57,7 +57,7 @@ class SignupTestHelper:
             "endpoints.instantiations.auth_.signup.middleware.send_signup_link"
         )
         self.request_validator.post(
-            endpoint="/api/auth/signup",
+            endpoint="/auth/signup",
             json={
                 "email": self.email,
                 "password": self.password,
@@ -80,7 +80,7 @@ class SignupTestHelper:
             "endpoints.instantiations.auth_.resend_validation_email.middleware.send_signup_link"
         )
         self.request_validator.post(
-            endpoint="/api/auth/resend-validation-email",
+            endpoint="/auth/resend-validation-email",
             json={"email": self.email},
             expected_response_status=expected_response_status,
             expected_json_content=expected_json_content,
@@ -96,7 +96,7 @@ class SignupTestHelper:
         expected_json_content: Optional[dict] = None,
     ):
         self.request_validator.post(
-            endpoint="/api/auth/validate-email",
+            endpoint="/auth/validate-email",
             headers=get_authorization_header(scheme="Bearer", token=token),
             json={"token": token},
             expected_response_status=expected_response_status,

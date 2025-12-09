@@ -1,9 +1,8 @@
 from db.client.core import DatabaseClient
-from db.enums import ApprovalStatus
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
-from tests.integration.test_check_database_health import wipe_database
+from tests.helpers.wipe import wipe_database
 
 
 def test_get_data_sources_for_map(
@@ -13,7 +12,7 @@ def test_get_data_sources_for_map(
     wipe_database(live_database_client)
     tdc = test_data_creator_db_client
     location_id = tdc.locality()
-    ds_id = tdc.data_source(approval_status=ApprovalStatus.APPROVED).id
+    ds_id = tdc.data_source().id
     a_id = tdc.agency(
         location_id=location_id,
     ).id

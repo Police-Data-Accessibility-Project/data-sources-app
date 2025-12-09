@@ -3,7 +3,7 @@ from typing import Sequence
 
 from sqlalchemy import values, column, Integer, String, select, func, RowMapping
 
-from db.models.implementations import LinkAgencyLocation
+from db.models.implementations.links.agency__location import LinkAgencyLocation
 from db.models.implementations.core.location.core import Location
 from db.models.implementations.core.location.us_state import USState
 from db.models.implementations.materialized_views.typeahead.locations import (
@@ -48,7 +48,7 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
             .alias("input_queries_alias")
         )
 
-        locations_with_one_agency = (
+        locations_with_agencies = (
             select(
                 Location.id.label("location_id"),
                 USState.state_iso.label("iso"),
@@ -63,9 +63,9 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
             )
             .group_by(Location.id, USState.state_iso)
             .having(
-                func.count(LinkAgencyLocation.agency_id) == 1,
+                func.count(LinkAgencyLocation.agency_id) >= 1,
             )
-            .cte("locations_with_one_agency")
+            .cte("locations_with_agencies")
         )
 
         similarity = func.similarity(
@@ -85,12 +85,11 @@ class SourceCollectorAgencySearchLocationQueryBuilder(QueryBuilderBase):
                 TypeaheadLocations.location_id == LinkAgencyLocation.location_id,
             )
             .join(
-                locations_with_one_agency,
-                TypeaheadLocations.location_id
-                == locations_with_one_agency.c.location_id,
+                locations_with_agencies,
+                TypeaheadLocations.location_id == locations_with_agencies.c.location_id,
             )
             .where(
-                locations_with_one_agency.c.iso == vals.c.iso,
+                locations_with_agencies.c.iso == vals.c.iso,
             )
             .order_by(
                 similarity.desc(),

@@ -1,9 +1,8 @@
 from datetime import date
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from db.enums import (
-    ApprovalStatus,
     AgencyAggregation,
     DetailLevel,
     AccessType,
@@ -11,13 +10,10 @@ from db.enums import (
     RetentionSchedule,
     URLStatus,
 )
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from middleware.schema_and_dto.dtos._helpers import (
     default_field_required,
     default_field_not_required,
-)
-from middleware.schema_and_dto.dynamic.pydantic_to_marshmallow.generator.models.metadata import (
-    MetadataInfo,
 )
 
 
@@ -29,11 +25,6 @@ class DataSourceEntryBaseDTO(BaseModel):
         description="Information to give clarity and confidence about what this source is, how it was "
         "processed, and whether the person reading the description might want to use it. "
         "Especially important if the source is difficult to preview or categorize.",
-    )
-    approval_status: ApprovalStatus = Field(
-        default=ApprovalStatus.PENDING,
-        description=description,
-        json_schema_extra=MetadataInfo(required=False),
     )
     source_url: str | None = default_field_not_required(
         description="The URL of the data source.",
@@ -71,4 +62,4 @@ class DataSourceEntryBaseDTO(BaseModel):
     data_portal_type_other: str | None = None
     access_notes: str | None = None
     url_status: URLStatus | None = None
-    record_type_name: RecordTypes | None = None
+    record_type_name: RecordTypesEnum | None = None

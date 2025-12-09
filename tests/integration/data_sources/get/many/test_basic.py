@@ -1,4 +1,4 @@
-from db.enums import ApprovalStatus, SortOrder
+from db.enums import SortOrder
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
@@ -17,7 +17,7 @@ def test_data_sources_get(
     tdc = test_data_creator_flask
     tus = tdc.standard_user()
     for i in range(100):
-        test_data_creator_db_client.data_source(approval_status=ApprovalStatus.APPROVED)
+        test_data_creator_db_client.data_source()
     response_json = tdc.request_validator.get_data_sources(
         headers=tus.api_authorization_header,
     )

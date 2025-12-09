@@ -1,7 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 
-from db.enums import ApprovalStatus
-from middleware.enums import RecordTypes
+from middleware.enums import RecordTypesEnum
 from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
     TestDataCreatorDBClient,
 )
@@ -59,18 +58,16 @@ def test_search_with_location_and_record_types_real_data(
     secondary_location_id = tdc.locality()
 
     def agency_and_data_source(
-        location_id, record_type: RecordTypes = RecordTypes.LIST_OF_DATA_SOURCES
+        location_id, record_type: RecordTypesEnum = RecordTypesEnum.LIST_OF_DATA_SOURCES
     ):
-        ds_id = tdc.data_source(
-            approval_status=ApprovalStatus.APPROVED, record_type=record_type
-        ).id
+        ds_id = tdc.data_source(record_type=record_type).id
         a_id = tdc.agency(location_id=location_id).id
         tdc.link_data_source_to_agency(data_source_id=ds_id, agency_id=a_id)
 
     # State
     agency_and_data_source(pennsylvania_location_id)
     agency_and_data_source(
-        pennsylvania_location_id, record_type=RecordTypes.RECORDS_REQUEST_INFO
+        pennsylvania_location_id, record_type=RecordTypesEnum.RECORDS_REQUEST_INFO
     )
     # Counties
     agency_and_data_source(allegheny_location_id)
@@ -79,7 +76,7 @@ def test_search_with_location_and_record_types_real_data(
     agency_and_data_source(pittsburgh_location_id)
     agency_and_data_source(secondary_location_id)
     agency_and_data_source(
-        pittsburgh_location_id, record_type=RecordTypes.RECORDS_REQUEST_INFO
+        pittsburgh_location_id, record_type=RecordTypesEnum.RECORDS_REQUEST_INFO
     )
 
     def search(state, record_categories=None, county=None, locality=None):

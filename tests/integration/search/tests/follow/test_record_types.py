@@ -1,7 +1,7 @@
 from db.enums import LocationType
 from db.helpers_.result_formatting import get_display_name
-from db.models.implementations.link import LinkFollowRecordType
-from middleware.enums import RecordTypes
+from db.models.implementations.links.follow__record_types import LinkFollowRecordType
+from middleware.enums import RecordTypesEnum
 from tests.integration.search.constants import TEST_STATE, TEST_COUNTY, TEST_LOCALITY
 from tests.integration.search.search_test_setup import SearchTestSetup
 from utilities.enums import RecordCategoryEnum
@@ -42,13 +42,13 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
 
     d = {
         RecordCategoryEnum.POLICE: [
-            RecordTypes.ACCIDENT_REPORTS,
-            RecordTypes.ARREST_RECORDS,
+            RecordTypesEnum.ACCIDENT_REPORTS,
+            RecordTypesEnum.ARREST_RECORDS,
         ],
         RecordCategoryEnum.AGENCIES: [
-            RecordTypes.ANNUAL_MONTHLY_REPORTS,
-            RecordTypes.BUDGETS_FINANCES,
-            RecordTypes.CONTACT_INFO_AGENCY_META,
+            RecordTypesEnum.ANNUAL_MONTHLY_REPORTS,
+            RecordTypesEnum.BUDGETS_FINANCES,
+            RecordTypesEnum.CONTACT_INFO_AGENCY_META,
         ],
     }
     record_types = []
@@ -65,13 +65,13 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
     check_result(
         {
             RecordCategoryEnum.POLICE.value: [
-                RecordTypes.ACCIDENT_REPORTS.value,
-                RecordTypes.ARREST_RECORDS.value,
+                RecordTypesEnum.ACCIDENT_REPORTS.value,
+                RecordTypesEnum.ARREST_RECORDS.value,
             ],
             RecordCategoryEnum.AGENCIES.value: [
-                RecordTypes.ANNUAL_MONTHLY_REPORTS.value,
-                RecordTypes.BUDGETS_FINANCES.value,
-                RecordTypes.CONTACT_INFO_AGENCY_META.value,
+                RecordTypesEnum.ANNUAL_MONTHLY_REPORTS.value,
+                RecordTypesEnum.BUDGETS_FINANCES.value,
+                RecordTypesEnum.CONTACT_INFO_AGENCY_META.value,
             ],
         }
     )
@@ -87,18 +87,18 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
     check_result(
         {
             RecordCategoryEnum.POLICE.value: [
-                RecordTypes.ACCIDENT_REPORTS.value,
-                RecordTypes.ARREST_RECORDS.value,
+                RecordTypesEnum.ACCIDENT_REPORTS.value,
+                RecordTypesEnum.ARREST_RECORDS.value,
             ],
             RecordCategoryEnum.AGENCIES.value: [
-                RecordTypes.ANNUAL_MONTHLY_REPORTS.value,
-                RecordTypes.BUDGETS_FINANCES.value,
-                RecordTypes.CONTACT_INFO_AGENCY_META.value,
+                RecordTypesEnum.ANNUAL_MONTHLY_REPORTS.value,
+                RecordTypesEnum.BUDGETS_FINANCES.value,
+                RecordTypesEnum.CONTACT_INFO_AGENCY_META.value,
             ],
             RecordCategoryEnum.JAIL.value: [
-                RecordTypes.BOOKING_REPORTS.value,
-                RecordTypes.COURT_CASES.value,
-                RecordTypes.INCARCERATION_RECORDS.value,
+                RecordTypesEnum.BOOKING_REPORTS.value,
+                RecordTypesEnum.COURT_CASES.value,
+                RecordTypesEnum.INCARCERATION_RECORDS.value,
             ],
         }
     )
@@ -115,13 +115,13 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
     check_result(
         {
             RecordCategoryEnum.POLICE.value: [
-                RecordTypes.ACCIDENT_REPORTS.value,
-                RecordTypes.ARREST_RECORDS.value,
+                RecordTypesEnum.ACCIDENT_REPORTS.value,
+                RecordTypesEnum.ARREST_RECORDS.value,
             ],
             RecordCategoryEnum.JAIL.value: [
-                RecordTypes.BOOKING_REPORTS.value,
-                RecordTypes.COURT_CASES.value,
-                RecordTypes.INCARCERATION_RECORDS.value,
+                RecordTypesEnum.BOOKING_REPORTS.value,
+                RecordTypesEnum.COURT_CASES.value,
+                RecordTypesEnum.INCARCERATION_RECORDS.value,
             ],
         }
     )
@@ -130,19 +130,19 @@ def test_search_record_types(search_test_setup: SearchTestSetup):
     rv.unfollow_search(
         headers=sts.tus.jwt_authorization_header,
         location_id=sts.location_id,
-        record_types=[RecordTypes.ACCIDENT_REPORTS],
+        record_types=[RecordTypesEnum.ACCIDENT_REPORTS],
     )
 
     # Confirm the remaining record types are still followed
     check_result(
         {
             RecordCategoryEnum.POLICE.value: [
-                RecordTypes.ARREST_RECORDS.value,
+                RecordTypesEnum.ARREST_RECORDS.value,
             ],
             RecordCategoryEnum.JAIL.value: [
-                RecordTypes.BOOKING_REPORTS.value,
-                RecordTypes.COURT_CASES.value,
-                RecordTypes.INCARCERATION_RECORDS.value,
+                RecordTypesEnum.BOOKING_REPORTS.value,
+                RecordTypesEnum.COURT_CASES.value,
+                RecordTypesEnum.INCARCERATION_RECORDS.value,
             ],
         }
     )
