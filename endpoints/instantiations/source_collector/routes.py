@@ -17,7 +17,6 @@ from utilities.namespace import create_namespace, AppNamespaces
 namespace_source_collector = create_namespace(AppNamespaces.SOURCE_COLLECTOR)
 
 
-
 @namespace_source_collector.route("/agencies/search/location", methods=["POST"])
 class SourceCollectorAgenciesSearchLocation(PsycopgResource):
     @endpoint_info(

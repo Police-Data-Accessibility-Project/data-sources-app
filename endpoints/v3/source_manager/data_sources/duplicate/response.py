@@ -9,5 +9,5 @@ class SourceManagerDataSourcesDuplicateResponse(BaseModel):
                 "www.unique-url": False,
                 "www.duplicate-url": True,
             }
-        ]
+        ],
     )

@@ -1,6 +1,10 @@
 from db.client.core import DatabaseClient
-from endpoints.v3.source_manager.data_sources.duplicate.request import SourceManagerDataSourcesDuplicateRequest
-from endpoints.v3.source_manager.data_sources.duplicate.response import SourceManagerDataSourcesDuplicateResponse
+from endpoints.v3.source_manager.data_sources.duplicate.request import (
+    SourceManagerDataSourcesDuplicateRequest,
+)
+from endpoints.v3.source_manager.data_sources.duplicate.response import (
+    SourceManagerDataSourcesDuplicateResponse,
+)
 from middleware.util.url import normalize_url
 
 

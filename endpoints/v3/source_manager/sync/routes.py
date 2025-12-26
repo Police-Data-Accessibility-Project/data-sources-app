@@ -1,9 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from db.client.core import DatabaseClient
-from endpoints.v3.source_manager.data_sources.duplicate.request import SourceManagerDataSourcesDuplicateRequest
-from endpoints.v3.source_manager.data_sources.duplicate.response import SourceManagerDataSourcesDuplicateResponse
-from endpoints.v3.source_manager.data_sources.duplicate.wrapper import check_for_duplicate_urls
 from endpoints.v3.source_manager.sync.follows.query import (
     GetUserFollowsSourceCollectorQueryBuilder,
 )
@@ -111,6 +108,7 @@ def update_data_sources(
     ),
 ) -> MessageDTO:
     return source_manager_update_data_sources(request)
+
 
 # Meta URLs
 

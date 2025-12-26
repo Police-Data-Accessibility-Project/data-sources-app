@@ -1,5 +1,9 @@
-from endpoints.v3.source_manager.data_sources.duplicate.request import SourceManagerDataSourcesDuplicateRequest
-from tests.helpers.helper_classes.test_data_creator.db_client_.core import TestDataCreatorDBClient
+from endpoints.v3.source_manager.data_sources.duplicate.request import (
+    SourceManagerDataSourcesDuplicateRequest,
+)
+from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
+    TestDataCreatorDBClient,
+)
 from tests.integration.v3.helpers.api_test_helper import APITestHelper
 
 
@@ -23,7 +27,7 @@ def test_source_collector_duplicates(
         url="/data-sources/duplicates",
         json=SourceManagerDataSourcesDuplicateRequest(
             urls=extant_urls + new_urls
-        ).model_dump(mode="json")
+        ).model_dump(mode="json"),
     )
     assert len(data["results"]) == 100
     for url in new_urls:

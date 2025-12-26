@@ -2,7 +2,9 @@ from typing import Sequence
 
 from sqlalchemy import select, RowMapping
 
-from db.models.implementations.links.user__followed_location import LinkUserFollowedLocation
+from db.models.implementations.links.user__followed_location import (
+    LinkUserFollowedLocation,
+)
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.v3.source_manager.sync.follows.response import (
     LinkUserFollow,
