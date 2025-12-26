@@ -1,18 +1,15 @@
-from flask import make_response
-
 from db.client.core import DatabaseClient
-from endpoints.instantiations.source_collector.data_sources.duplicates.dto import (
-    SourceCollectorDuplicatesPostRequestDTO,
-)
+from endpoints.v3.source_manager.data_sources.duplicate.request import SourceManagerDataSourcesDuplicateRequest
+from endpoints.v3.source_manager.data_sources.duplicate.response import SourceManagerDataSourcesDuplicateResponse
 from middleware.util.url import normalize_url
 
 
 def check_for_duplicate_urls(
-    db_client: DatabaseClient, dto: SourceCollectorDuplicatesPostRequestDTO
-):
+    db_client: DatabaseClient, request: SourceManagerDataSourcesDuplicateRequest
+) -> SourceManagerDataSourcesDuplicateResponse:
     # First, normalize all urls
     d_normalized_urls_to_urls = {}
-    for url in dto.urls:
+    for url in request.urls:
         normalized_url = normalize_url(url)
         d_normalized_urls_to_urls[normalized_url] = url
 
@@ -24,4 +21,6 @@ def check_for_duplicate_urls(
         is_duplicate = normalized_url in database_urls
         results[d_normalized_urls_to_urls[normalized_url]] = is_duplicate
 
-    return make_response({"results": results})
+    return SourceManagerDataSourcesDuplicateResponse(
+        results=results,
+    )
