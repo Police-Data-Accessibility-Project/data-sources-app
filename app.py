@@ -63,7 +63,8 @@ from endpoints.instantiations.typeahead_.routes import (
 )
 from endpoints.instantiations.user.routes import namespace_user
 from endpoints.v3.permissions.routes import permission_router
-from endpoints.v3.source_manager.routes import sm_router
+from endpoints.v3.source_manager.data_sources.routes import data_sources_router
+from endpoints.v3.source_manager.sync.routes import sm_router
 from endpoints.v3.user.routes import user_router
 from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.scheduled_tasks.manager import SchedulerManager
@@ -225,7 +226,12 @@ def create_fast_api_app() -> FastAPI:
         "\n\nThe old Flask API is available at {this_address}/"
         "",
     )
-    for router in [sm_router, user_router, permission_router]:
+    for router in [
+        sm_router,
+        user_router,
+        permission_router,
+        data_sources_router,
+    ]:
         fast_api_app.include_router(router)
 
     return fast_api_app

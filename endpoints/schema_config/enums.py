@@ -168,9 +168,6 @@ from endpoints.schema_config.instantiations.search.follow.post import (
 from endpoints.schema_config.instantiations.search.location_and_record_type import (
     SearchLocationAndRecordTypeGetEndpointSchemaConfig,
 )
-from endpoints.schema_config.instantiations.source_collector.duplicates import (
-    SourceCollectorDuplicatesPostEndpointSchemaConfig,
-)
 from endpoints.schema_config.instantiations.typeahead.agencies import (
     TypeaheadAgenciesEndpointSchemaConfig,
 )
@@ -322,7 +319,6 @@ class SchemaConfigs(Enum):
     RECORD_TYPE_AND_CATEGORY_GET = RecordTypeAndCategoryGetEndpointSchemaConfig
     # endregion
 
-    SOURCE_COLLECTOR_DUPLICATES_POST = SourceCollectorDuplicatesPostEndpointSchemaConfig
     SOURCE_COLLECTOR_SEARCH_AGENCIES_LOCATION = (
         SourceCollectorAgencySearchLocationSchemaConfig
     )
