@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from db.enums import (
     DetailLevel,
@@ -46,6 +46,17 @@ class PostDataSourceRequest(BaseModel):
     data_portal_type_other: Optional[str] = default_field_not_required()
     data_source_request: Optional[str] = default_field_not_required()
     record_type_name: Optional[RecordTypesEnum] = default_field_not_required()
+
+    @field_validator("source_url")
+    @classmethod
+    def validate_source_url_no_fragments(cls, v: str) -> str:
+        """Validate that source_url does not contain URL fragments (#)."""
+        if "#" in v:
+            raise ValueError(
+                "Invalid URL: URLs with fragments (#) are not allowed. "
+                "Please remove the fragment from the URL."
+            )
+        return v
 
 
 class PostDataSourceOuterRequest(BaseModel):
