@@ -69,12 +69,13 @@ class PostDataSourceQuery(QueryBuilderBase):
                 )
                 self.session.add(link_insert)
         except sqlalchemy.exc.IntegrityError as e:
-            if e.orig.sqlstate == "23514":
+            sqlstate = getattr(e.orig, "sqlstate", None)
+            if sqlstate == "23514":
                 raise BadRequest(
                     "Invalid URL: URLs with fragments (#) are not allowed. "
                     "Please remove the fragment from the URL."
                 )
-            if e.orig.sqlstate == "23505":
+            if sqlstate == "23505":
                 raise Conflict(
                     "Duplicate URL: This URL and record type combination already exists as a data source."
                 )
