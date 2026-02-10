@@ -2,85 +2,53 @@
 
 # data-sources-app
 
-An API for searching, using, and maintaining Data Sources. 
+An API for searching, using, and maintaining Data Sources, built by the [Police Data Accessibility Project (PDAP)](https://pdap.io).
 
 #### Live app: https://data-sources.pdap.io/ deployed from `main`
-#### Dev app:https://data-sources.pdap.dev/ deployed from `dev`
+#### Dev app: https://data-sources.pdap.dev/ deployed from `dev`
 #### API docs / base URL: https://data-sources.pdap.io/api (or ...dev/api)
 
-## Running the app for local development
+## Documentation
 
-### 1. Clone this repository and navigate to the root directory.
+Full documentation is in the [`docs/`](docs/) directory:
 
-```
+- **[Architecture Overview](docs/architecture.md)** — System design, dual Flask/FastAPI architecture, directory structure.
+- **[API Overview](docs/api/overview.md)** — v2 and v3 APIs, versioning, and migration plan.
+- **[Authentication](docs/api/authentication.md)** — JWT, API keys, OAuth, and permissions.
+- **[Endpoints](docs/api/endpoints.md)** — All available endpoints and what they do.
+- **[Development Setup](docs/development/setup.md)** — Full setup guide (dependencies, database, secrets).
+- **[Database](docs/development/database.md)** — Schema, migrations, query builders.
+- **[Testing](docs/development/testing.md)** — Running and writing tests.
+- **[Workflow](docs/development/workflow.md)** — Branching, PRs, CI/CD, code standards.
+- **[Troubleshooting](docs/troubleshooting.md)** — Common issues and fixes.
+
+## Quick Start
+
+```bash
+# Clone
 git clone https://github.com/Police-Data-Accessibility-Project/data-sources-app.git
 cd data-sources-app
-```
 
-### 2. Create a virtual environment.
+# Install dependencies (using uv)
+pip install uv
+uv sync --locked --all-extras --dev
 
-If you don't already have virtualenv, install the package:
-
-```
-
-pip install virtualenv
-
-```
-
-Then run the following command to create a virtual environment:
-
-```
-
-virtualenv -p python3.11 venv
-
-```
-
-### 3. Activate the virtual environment.
-
-```
-
-source venv/bin/activate
-
-```
-
-### 4. Install dependencies.
-
-```
-
-pip install -r requirements.txt
-pip install "psycopg[binary,pool]"
-
+# Set up pre-commit hooks
 pre-commit install
 
-# To optionally run the pre-commit against all files (as pre-commit usually only runs on changed files)
-pre-commit run --all-files
+# Configure environment (see docs/development/setup.md and ENV.md)
+cp .env.example .env  # Then edit with your values
 
+# Set up local database
+cd local_database && python setup.py && cd ..
+uv run alembic upgrade head
+
+# Run the app
+python app.py
 ```
 
-### 5. Add environment secrets
-
-For more information on setting up environment secrets, see `ENV.md`
-
-### 6. Set up Local Database
-
-Follow instructions in the `/local_database` directory to set up a local database for testing.
-
-### 7. Run the Python app.
-
-```
-
-python3 app.py
-
-# Within a container -- ensure docker ports are properly bound as well
-gunicorn  --bind 0.0.0.0:8080 --access-logfile - --access-logformat '%(h)s %({http_x_user_id}e)s %(m)s %(U)s %(q)s %(s)s' --error-logfile - 'app:create_app()'
-```
-
-
-### 8. (If necessary) run the client locally against the API
-
-If you need to run the client web application, refer to the [pdap.io documentation](https://github.com/Police-Data-Accessibility-Project/pdap.io). 
-
-Generally, local development on the client is done based on the stable deployed `dev` API, and API development can usually be verified using `curl`. But if you are working on a full stack project for which you need to run the client locally against the API locally, reach out to @maxachis and @joshuagraber in Discord for help.
+For the full setup guide with all options, see [Development Setup](docs/development/setup.md).
 
 ## Contributing
-If you're here to submit a Pull Request, please review the important information available in CONTRIBUTING.md.
+
+Please review [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a Pull Request. For architecture and design decisions, see [DESIGN.md](DESIGN.md).
