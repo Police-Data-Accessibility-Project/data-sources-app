@@ -161,6 +161,14 @@ All triggered on pull requests:
 - **Type checking**: basedpyright with many rules temporarily disabled (see `pyproject.toml`)
 - **Commit style**: Conventional Commits (via Commitizen)
 
+## Pre-Commit Checks
+
+After making changes, always run the following before committing:
+```bash
+uv run basedpyright --level error
+```
+Ensure there are 0 errors before considering the work complete.
+
 ## Branching Strategy
 
 - `main` = production
