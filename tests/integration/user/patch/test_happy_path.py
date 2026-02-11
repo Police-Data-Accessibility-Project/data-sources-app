@@ -17,7 +17,6 @@ def get_capacities_from_db(tdc, user_id: int):
 
 def test_user_patch(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
-    tdc.clear_test_data()
     tus = tdc.standard_user()
 
     user_id = tus.user_info.user_id

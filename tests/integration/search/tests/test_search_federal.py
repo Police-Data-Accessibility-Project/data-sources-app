@@ -8,7 +8,6 @@ from utilities.enums import RecordCategoryEnum
 
 def test_search_federal(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
-    tdc.clear_test_data()
     # Create two approved federal agencies
     agency_ids = []
     for i in range(2):

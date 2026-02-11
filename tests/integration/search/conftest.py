@@ -5,13 +5,11 @@ from tests.helpers.helper_classes.test_data_creator.flask import (
 )
 from tests.integration.search.constants import TEST_LOCALITY, TEST_STATE, TEST_COUNTY
 from tests.integration.search.search_test_setup import SearchTestSetup
-from tests.helpers.wipe import wipe_database
 
 
 @pytest.fixture
 def search_test_setup(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
-    wipe_database(tdc.db_client)
 
     try:
         tdc.locality(TEST_LOCALITY)
