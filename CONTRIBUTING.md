@@ -1,74 +1,60 @@
 # Contributing
 
-This guide contains information which will help you submit code to the Data Sources App.
+Thanks for your interest in contributing to the PDAP Data Sources App! This guide will help you get started.
 
-## Installation
-Follow instructions in README.md.
+## Getting Started
 
-## Testing
+1. **Set up the project** — Follow the [Development Setup](docs/development/setup.md) guide to install dependencies, configure environment variables, and set up a local database.
+2. **Understand the architecture** — Read the [Architecture Overview](docs/architecture.md) and [DESIGN.md](DESIGN.md) for context on how the codebase is organized and why.
 
-### Location
-All unit and integration tests for the API live in the `tests` folder
+## Development Workflow
 
-It is best practice to add tests for any new feature to ensure it is working as expected and that any future code changes do not affect its functionality. All tests will be automatically run when a PR into dev is opened in order to ensure any changes do not break current app functionality. If a test fails, it is a sign that the new code should be checked or possibly that the test needs to be updated. 
+We use a two-branch model:
 
-## Linting
-Linting is enforced with ruff on PR creation. You can use ruff to automatically reformat your files before commiting them, which will allow your PR to pass this check. Any files that require reformatting will be listed on any failed checks on the PR.
+| Branch | Deploys to | Purpose |
+|--------|------------|---------|
+| `main` | [data-sources.pdap.io](https://data-sources.pdap.io) | Production |
+| `dev` | [data-sources.pdap.dev](https://data-sources.pdap.dev) | Development / staging |
+
+### Making Changes
+
+1. Create a feature branch from `dev`.
+2. Make your changes and add tests for new functionality.
+3. Run checks locally before pushing (see below).
+4. Open a PR targeting `dev`.
+5. CI checks run automatically; a code owner will review your PR.
+6. After merge to `dev`, changes deploy to the dev environment.
+7. Periodically, `dev` is merged into `main` to deploy to production.
+
+For full details on the PR process, CI checks, and commit conventions, see the [Workflow](docs/development/workflow.md) guide.
+
+## Pre-Push Checklist
+
+Before opening a PR, make sure your changes pass locally:
+
+```bash
+# Run tests (requires a running database — see Development Setup)
+uv run pytest tests
+
+# Lint and format
+ruff check .
+ruff format --check .
+
+# Type check
+uv run basedpyright --level error
 ```
-ruff check .              # Lint
-ruff check --fix .        # Lint and auto-fix issues
-ruff format --check .     # Check if formatting needed
-ruff format .             # Format code
-```
 
-## Docstring and Type Checking
-
-Docstrings and Type Checking are checked using the [pydocstyle](https://www.pydocstyle.org/en/stable/) and [mypy](https://mypy-lang.org/)
-modules, respectively. When making a pull request, a Github Action (`python_checks.yml`) will run and, 
-if it detects any missing docstrings or type hints in files that you have modified, post them in the Pull Request.
-
-These will *not* block any Pull request, but exist primarily as advisory comments to encourage good coding standards.
-
-Note that `python_checks.yml` will only function on pull requests made from within the repo, not from a forked repo.
-
-### Test Databases
-
-Currently, two test databases exist:
-
-* Sandbox - This is to be used by developers to test out changes to the schema and content of the database in connection with development versions of the app. Sensitive information from the production database, such as user information, are excluded in this environment.
-* Stage - This is used to test stage code in an environment as closely modeling the production database as possible, and is not designed to be accessed directly by developers. Sensitive information is included in this environment.
-
-Both databases are refreshed daily from the production database, using logic in the [https://github.com/Police-Data-Accessibility-Project/prod-to-dev-migration](https://github.com/Police-Data-Accessibility-Project/prod-to-dev-migration) repository. Additionally, they are updated with SQL code from [dev\_scripts.sql](https://github.com/Police-Data-Accessibility-Project/prod-to-dev-migration/blob/main/dev\_scripts.sql), which provides the most up-to-date development version of the database.
-
-### Obtaining test database information for admins
-
-Connection information can be obtained through access the databases on Digital Ocean.
-
-* In [https://cloud.digitalocean.com/databases](https://cloud.digitalocean.com/databases?i=feca0b), you will be able to select different databases. From here, you can click on the `Actions` dropdown, and select `Connection Details` to obtain information about the relevant connection.
-
-Login information for users can be obtained through environment variables provided for the Prod to Stage and Sandbox Migration Job, currently located at: [https://automation.pdap.io/job/Prod%20to%20Stage%20and%20Sandbox%20Migration/configure](https://automation.pdap.io/job/Prod%20to%20Stage%20and%20Sandbox%20Migration/configure)
-
-* Look for environment variables for:
-  * SANDBOX\_DEV\_USER
-  * SANDBOX\_DEV\_PASSWORD
-* Additional information about the database, including the server name, the port number, and the database name, can also be found on connection strings labeled with the "SANDBOX\_" or "STAGE\_" prefixes.
-
-
-
-### Running Tests Locally
-
-A connection string will need to be input into the `DO_DATABASE_URL` environment variables for your local copy of [data\_sources\_app ](https://github.com/Police-Data-Accessibility-Project/data-sources-app). This connection string will take the following form:
-
-`postgresql://user:password@server:port/dbname?sslmod=require`
-
-Once this is set, you can run tests by running `pytest <directory-or-file>`
-
-Full pytest documentation can be found [here](https://docs.pytest.org/en/stable/contents.html).
-
+For more on running and writing tests, see the [Testing](docs/development/testing.md) guide.
 
 ## Design Principles
 
-[These Design Principles](https://github.com/Police-Data-Accessibility-Project/meta/blob/main/DESIGN-PRINCIPLES.md) may be used to make decisions or guide your work.
+- **Project design decisions**: [DESIGN.md](DESIGN.md)
+- **PDAP-wide design philosophy**: [PDAP Design Principles](https://github.com/Police-Data-Accessibility-Project/meta/blob/main/DESIGN-PRINCIPLES.md)
+
+## Questions?
+
+If you're unsure how something works or where to start, reach out in [Discord](https://discord.gg/wMqex68Kkf) or email contact@pdap.io.
 
 ## Client App
-See the [README at pdap.io](https://github.com/Police-Data-Accessibility-Project/pdap.io)
+
+See the [README at pdap.io](https://github.com/Police-Data-Accessibility-Project/pdap.io).

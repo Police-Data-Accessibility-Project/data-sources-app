@@ -101,11 +101,11 @@ See [`manual_tests/README.md`](../../manual_tests/README.md) for instructions.
 
 ## Test Databases
 
-Two remote test databases are available (see [CONTRIBUTING.md](../../CONTRIBUTING.md) for access):
+Two remote test databases are available:
 
 | Database | Purpose | Sensitive Data? |
 |----------|---------|-----------------|
 | **Sandbox** | Developer testing, schema experiments | No |
 | **Stage** | Pre-release integration testing | Yes |
 
-Both are refreshed daily from production. Connection details are available through DigitalOcean (admin access required) or environment variables on the Jenkins migration job.
+Both are refreshed daily from production. Connection details are available through DigitalOcean (admin access required) or environment variables on the Jenkins migration job. Reach out to the team in [Discord](https://discord.gg/wMqex68Kkf) for access.
