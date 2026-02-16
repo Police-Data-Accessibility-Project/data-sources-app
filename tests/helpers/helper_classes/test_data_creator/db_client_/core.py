@@ -1,7 +1,6 @@
 import datetime
 import uuid
 
-from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 
 from db.client.core import DatabaseClient
@@ -10,21 +9,6 @@ from db.enums import (
     EventType,
     ExternalAccountTypeEnum,
     RequestUrgency,
-)
-from db.models.implementations.core.data_request.core import DataRequest
-from db.models.implementations.core.data_source.core import DataSource
-from db.models.implementations.core.log.notification import NotificationLog
-from db.models.implementations.core.notification.pending.data_request import (
-    DataRequestPendingEventNotification,
-)
-from db.models.implementations.core.notification.pending.data_source import (
-    DataSourcePendingEventNotification,
-)
-from db.models.implementations.core.notification.queue.data_request import (
-    DataRequestUserNotificationQueue,
-)
-from db.models.implementations.core.notification.queue.data_source import (
-    DataSourceUserNotificationQueue,
 )
 from middleware.enums import (
     JurisdictionType,
@@ -84,20 +68,9 @@ class TestDataCreatorDBClient:
         return f"TEST_{midfix}_{uuid.uuid4().hex}.com"
 
     def clear_test_data(self) -> None:
-        for model in [
-            DataRequest,
-            # Agency,
-            # Locality
-            DataSource,
-            # User,
-            NotificationLog,
-            DataRequestUserNotificationQueue,
-            DataSourceUserNotificationQueue,
-            DataRequestPendingEventNotification,
-            DataSourcePendingEventNotification,
-        ]:
-            query = delete(model)
-            self.db_client.execute(query)
+        from tests.helpers.wipe import wipe_database
+
+        wipe_database(self.db_client)
 
     def county(
         self,

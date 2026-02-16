@@ -20,7 +20,6 @@ from tests.integration.github_data_requests_issues.constants import PATCH_ROOT
 class TestSynchronizeGithubIssueHappyPathManager:
     def __init__(self, tdc: TestDataCreatorFlask, monkeypatch_):
         self.tdc = tdc
-        self.tdc.clear_test_data()
         self.db_client = tdc.db_client
         self.mock_issue_count = 0
         self.mock_repo: dict[int, GIPIInfo] = {}

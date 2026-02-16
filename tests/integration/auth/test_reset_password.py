@@ -19,7 +19,7 @@ from tests.helpers.helper_functions_simple import get_authorization_header
 
 
 def test_reset_password_post(
-    test_data_creator_flask: TestDataCreatorFlask, dev_db_client, mocker
+    test_data_creator_flask: TestDataCreatorFlask, mocker
 ):
     """
     Test that POST call to /reset-password endpoint successfully resets the user's password, and verifies the new password digest is distinct from the old one in the database
@@ -39,7 +39,7 @@ def test_reset_password_post(
     # User should be able to log in with the old password
     login(user_info.password)
 
-    old_password_digest = dev_db_client.get_user_info(user_info.email).password_digest
+    old_password_digest = tdc.db_client.get_user_info(user_info.email).password_digest
 
     token = request_reset_password_api(tdc.flask_client, mocker, user_info)
 
@@ -64,7 +64,7 @@ def test_reset_password_post(
         password=new_password,
     )
 
-    new_password_digest = dev_db_client.get_user_info(user_info.email).password_digest
+    new_password_digest = tdc.db_client.get_user_info(user_info.email).password_digest
     assert new_password_digest != old_password_digest, (
         "Old and new password digests should be distinct"
     )

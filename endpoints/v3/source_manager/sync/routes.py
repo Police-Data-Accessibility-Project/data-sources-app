@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from db.client.core import DatabaseClient
-from endpoints.v3.source_manager.follows.query import (
+from endpoints.v3.source_manager.sync.follows.query import (
     GetUserFollowsSourceCollectorQueryBuilder,
 )
-from endpoints.v3.source_manager.follows.response import GetFollowsResponse
+from endpoints.v3.source_manager.sync.follows.response import GetFollowsResponse
 from endpoints.v3.source_manager.sync.agencies.add.request import (
     AddAgenciesOuterRequest,
 )
@@ -68,7 +68,7 @@ from middleware.security.auth.fastapi import (
 sm_router = APIRouter(prefix="/sync", tags=["Sync"])
 
 
-@sm_router.get("/follows")
+@sm_router.get("follows")
 def get_follows(
     access_info: AccessInfoPrimary = Depends(
         get_source_collector_data_sources_access_info

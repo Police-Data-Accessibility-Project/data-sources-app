@@ -36,13 +36,6 @@ from utilities.common import get_alembic_conn_string
 dotenv.load_dotenv()
 
 
-# TODO: Redundant with Live Database Client. Consolidate and remove this.
-@pytest.fixture
-def dev_db_client() -> Generator[DatabaseClient, Any, None]:
-    db_client = DatabaseClient()
-    yield db_client
-
-
 ClientWithMockDB = namedtuple("ClientWithMockDB", ["client", "mock_db"])
 
 
@@ -113,12 +106,6 @@ def test_table_data(live_database_client: DatabaseClient):
     ('Simon', 'Bear');
     """
     )
-
-
-@pytest.fixture
-def clear_data_requests(dev_db_client: DatabaseClient):
-    """Clear `data_requests` and associated tables"""
-    dev_db_client.execute_raw_sql("DELETE FROM DATA_REQUESTS;")
 
 
 @pytest.fixture(scope="session")

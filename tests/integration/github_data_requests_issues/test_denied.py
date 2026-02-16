@@ -8,7 +8,7 @@ from tests.helpers.helper_functions_complex import create_test_user_setup
 
 
 def test_synchronize_github_issue_denied(
-    test_data_creator_flask: TestDataCreatorFlask, monkeypatch, clear_data_requests
+    test_data_creator_flask: TestDataCreatorFlask, monkeypatch
 ):
     # Give a user every permission except github_sync
     tdc = test_data_creator_flask

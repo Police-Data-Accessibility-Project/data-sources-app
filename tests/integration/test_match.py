@@ -45,7 +45,6 @@ def match_agency_setup(
     test_data_creator_flask: TestDataCreatorFlask,
 ) -> TestMatchAgencySetup:
     tdc = test_data_creator_flask
-    tdc.clear_test_data()
     loc_info: TestMatchLocationInfo = TestMatchLocationInfo(tdc)
     agency = tdc.agency(location_ids=[loc_info.locality_id])
     return TestMatchAgencySetup(

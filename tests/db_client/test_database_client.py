@@ -242,10 +242,11 @@ def test_get_linked_rows(
 
 
 def test_get_unarchived_data_requests_with_issues(
-    test_data_creator_db_client: TestDataCreatorDBClient, clear_data_requests
+    test_data_creator_db_client: TestDataCreatorDBClient,
 ):
     # Add data requests with issues
     tdc = test_data_creator_db_client
+    tdc.clear_test_data()
 
     def create_data_request_with_issue_and_request_status(
         request_status: RequestStatus,

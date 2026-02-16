@@ -1,5 +1,8 @@
 def wipe_database(db_client):
     for table in [
+        "change_log",
+        "table_count_log",
+        "notification_log",
         "agencies",
         "data_sources",
         "data_requests",

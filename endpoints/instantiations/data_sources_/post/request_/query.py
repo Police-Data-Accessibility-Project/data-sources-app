@@ -1,7 +1,8 @@
 from typing import Sequence
 
+import sqlalchemy.exc
 from sqlalchemy import RowMapping, select
-from werkzeug.exceptions import InternalServerError
+from werkzeug.exceptions import BadRequest, Conflict, InternalServerError
 
 from db.models.implementations.links.agency__data_source import LinkAgencyDataSource
 from db.models.implementations.core.data_source.core import DataSource
@@ -58,14 +59,27 @@ class PostDataSourceQuery(QueryBuilderBase):
         except Exception as e:
             raise InternalServerError(f"Error creating data source: {e}")
 
-        self.session.add(ds_insert)
-        self.session.flush()
+        try:
+            self.session.add(ds_insert)
+            self.session.flush()
 
-        for agency_id in self.linked_agency_ids:
-            link_insert = LinkAgencyDataSource(
-                data_source_id=ds_insert.id, agency_id=agency_id
-            )
-            self.session.add(link_insert)
+            for agency_id in self.linked_agency_ids:
+                link_insert = LinkAgencyDataSource(
+                    data_source_id=ds_insert.id, agency_id=agency_id
+                )
+                self.session.add(link_insert)
+        except sqlalchemy.exc.IntegrityError as e:
+            sqlstate = getattr(e.orig, "sqlstate", None)
+            if sqlstate == "23514":
+                raise BadRequest(
+                    "Invalid URL: URLs with fragments (#) are not allowed. "
+                    "Please remove the fragment from the URL."
+                )
+            if sqlstate == "23505":
+                raise Conflict(
+                    "Duplicate URL: This URL and record type combination already exists as a data source."
+                )
+            raise InternalServerError(f"Error creating data source: {e}")
 
         return ds_insert.id
 

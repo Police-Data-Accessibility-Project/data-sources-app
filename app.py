@@ -14,6 +14,10 @@ from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 
 from config import config, oauth, limiter, jwt
+from middleware.access_log_filter import (
+    SuppressTestAccessLogMiddleware,
+    install_test_request_log_filter,
+)
 from db.helpers_.psycopg import initialize_psycopg_connection
 from endpoints.instantiations.admin_.routes import namespace_admin
 from endpoints.instantiations.agencies_.routes import namespace_agencies
@@ -63,7 +67,7 @@ from endpoints.instantiations.typeahead_.routes import (
 )
 from endpoints.instantiations.user.routes import namespace_user
 from endpoints.v3.permissions.routes import permission_router
-from endpoints.v3.source_manager.routes import sm_router
+from endpoints.v3.source_manager.sync.routes import sm_router
 from endpoints.v3.user.routes import user_router
 from middleware.scheduled_tasks.check_database_health import check_database_health
 from middleware.scheduled_tasks.manager import SchedulerManager
@@ -208,8 +212,12 @@ def create_asgi_app() -> Starlette:
         allow_headers=["*"],
     )
 
+    app.add_middleware(SuppressTestAccessLogMiddleware)
+
     app.mount("/api/v3", fast_api_app)
     app.mount("/api/v2", WSGIMiddlewareFastAPI(flask_app))
+
+    install_test_request_log_filter()
 
     return app
 

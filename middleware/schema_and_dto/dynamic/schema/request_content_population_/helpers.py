@@ -3,7 +3,7 @@ from typing import Any
 
 import marshmallow
 from marshmallow import Schema
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from werkzeug.exceptions import BadRequest
 
 from middleware.schema_and_dto.dynamic.schema.request_content_population_.exceptions import (
@@ -34,13 +34,22 @@ def setup_dto_class(
     nested_dto_info_list: list[NestedDTOInfo],
 ) -> BaseModel:
     """Setup DTO class based on data and nested DTO info list."""
-    for nested_dto_info in nested_dto_info_list:
-        if nested_dto_info.key in data:
-            nested_dto = nested_dto_info.class_(**data[nested_dto_info.key])
-            data[nested_dto_info.key] = nested_dto
-        else:
-            data[nested_dto_info.key] = None
-    return dto_class(**data)
+    try:
+        for nested_dto_info in nested_dto_info_list:
+            if nested_dto_info.key in data:
+                nested_dto = nested_dto_info.class_(**data[nested_dto_info.key])
+                data[nested_dto_info.key] = nested_dto
+            else:
+                data[nested_dto_info.key] = None
+        return dto_class(**data)
+    except ValidationError as e:
+        # Extract the error message from the first validation error
+        errors = e.errors()
+        if errors:
+            first_error = errors[0]
+            error_message = first_error.get("msg", str(e))
+            raise BadRequest(error_message)
+        raise BadRequest(str(e))
 
 
 def validate_data(data: JSONDict, schema_obj: Schema) -> ValidatedDict:

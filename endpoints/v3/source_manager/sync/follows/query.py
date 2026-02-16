@@ -2,8 +2,11 @@ from typing import Sequence
 
 from sqlalchemy import select, RowMapping
 
+from db.models.implementations.links.user__followed_location import (
+    LinkUserFollowedLocation,
+)
 from db.queries.builder.core import QueryBuilderBase
-from endpoints.v3.source_manager.follows.response import (
+from endpoints.v3.source_manager.sync.follows.response import (
     LinkUserFollow,
     GetFollowsResponse,
 )
@@ -14,8 +17,8 @@ from db.helpers_ import session as sh
 class GetUserFollowsSourceCollectorQueryBuilder(QueryBuilderBase):
     def run(self) -> GetFollowsResponse:
         query = select(
-            LinkUserFollow.user_id,
-            LinkUserFollow.location_id,
+            LinkUserFollowedLocation.user_id,
+            LinkUserFollowedLocation.location_id,
         )
 
         mappings: Sequence[RowMapping] = sh.mappings(session=self.session, query=query)

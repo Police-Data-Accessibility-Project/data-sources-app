@@ -38,24 +38,37 @@ from tests.integration.notifications.pending_to_queue._helpers.checker_.data_sou
 class NotificationsPendingToQueueLocationTestManager:
     def __init__(self, tdc: TestDataCreatorDBClient):
         self.tdc = tdc
-        self.tdc.clear_test_data()
         self.db_client = tdc.db_client
+        self.dr_checker: DataRequestsEventQueueChecker | None = None
+        self.ds_checker: DataSourcesEventQueueChecker | None = None
+
+    def _create_test_data(self):
+        """Clear and recreate test data.
+
+        Uses targeted cleanup instead of clear_test_data() because this
+        test depends on locality fixtures (pittsburgh_id, allegheny_id)
+        that must survive cleanup.
+        """
+        for model in [
+            DataRequestUserNotificationQueue,
+            DataSourceUserNotificationQueue,
+            DataRequestPendingEventNotification,
+            DataSourcePendingEventNotification,
+        ]:
+            self.db_client.execute(delete(model))
+        for table in ["agencies", "data_sources", "data_requests", "users"]:
+            self.db_client.execute_raw_sql("DELETE FROM " + table)
         self.user_id_1 = self.tdc.user().id
         self.user_id_2 = self.tdc.user().id
         self.data_source_id = self.tdc.data_source().id
         self.data_request_id = self.tdc.data_request().id
-        # Clear pending tables to ensure clean slate
-        self._clear_pending_tables()
-        self.dr_checker: DataRequestsEventQueueChecker | None = None
-        self.ds_checker: DataSourcesEventQueueChecker | None = None
-
-    def _clear_pending_tables(self):
+        # Clear pending tables again after data creation, since DB triggers
+        # may auto-insert pending notifications when data sources are created
         for model in [
             DataRequestPendingEventNotification,
             DataSourcePendingEventNotification,
         ]:
-            query = delete(model)
-            self.db_client.execute(query)
+            self.db_client.execute(delete(model))
 
     def _setup_user_follows(self, location_id: int):
         for user_id in [self.user_id_1, self.user_id_2]:
@@ -89,6 +102,7 @@ class NotificationsPendingToQueueLocationTestManager:
         self.tdc.db_client.add_many(entries)
 
     def setup(self, follow_location_id: int, entity_location_id: int) -> None:
+        self._create_test_data()
         self._setup_user_follows(location_id=follow_location_id)
         self._setup_entity_location(location_id=entity_location_id)
         self._add_entries_to_pending()
@@ -99,6 +113,7 @@ class NotificationsPendingToQueueLocationTestManager:
     def setup_follow_locations(
         self, follow_location_ids: list[int], entity_location_id: int
     ) -> None:
+        self._create_test_data()
         for follow_location_id in follow_location_ids:
             self._setup_user_follows(location_id=follow_location_id)
         self._setup_entity_location(location_id=entity_location_id)
