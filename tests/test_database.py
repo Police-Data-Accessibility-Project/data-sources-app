@@ -41,16 +41,16 @@ def setup_fake_locations(live_database_client: DatabaseClient):
         column_value_mappings=FAKE_STATE_INFO,
     )
     # Populate `counties` with data, returning id
-    FAKE_COUNTY_INFO.update({"state_id": state_id})
+    county_info = {**FAKE_COUNTY_INFO, "state_id": state_id}
     county_id = live_database_client.create_or_get(
         table_name=Relations.COUNTIES.value,
-        column_value_mappings=FAKE_COUNTY_INFO,
+        column_value_mappings=county_info,
     )
     # Populate `localities` with data, returning id
-    FAKE_LOCALITY_INFO.update({"county_id": county_id})
+    locality_info = {**FAKE_LOCALITY_INFO, "county_id": county_id}
     locality_id = live_database_client.create_or_get(
         table_name=Relations.LOCALITIES.value,
-        column_value_mappings=FAKE_LOCALITY_INFO,
+        column_value_mappings=locality_info,
     )
 
     yield FakeLocationsInfo(state_id, county_id, locality_id)

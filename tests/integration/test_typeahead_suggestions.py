@@ -121,7 +121,6 @@ def test_typeahead_agencies_approved(test_data_creator_flask: TestDataCreatorFla
     Test that GET call to /typeahead/agencies endpoint successfully retrieves data
     """
     tdc = test_data_creator_flask
-    tdc.clear_test_data()
     tdc.locality(locality_name="Qzy")
     agency_id = tdc.agency(agency_name="Qzy").id
     tdc.refresh_typeahead_agencies()

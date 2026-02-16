@@ -1,3 +1,5 @@
+from sqlalchemy.exc import IntegrityError
+
 from db.db_client_dataclasses import WhereMapping
 from db.enums import LocationType
 from middleware.schema_and_dto.dtos.locations.put import LocationPutDTO
@@ -9,6 +11,13 @@ from tests.helpers.helper_classes.test_data_creator.db_client_.core import (
 class MultiLocationSetup:
     def __init__(self, tdc: TestDataCreatorDBClient) -> None:
         self.tdc = tdc
+        # Ensure Pittsburgh locality exists (may have been cleaned by wipe_database)
+        try:
+            tdc.locality(
+                locality_name="Pittsburgh", state_iso="PA", county_name="Allegheny"
+            )
+        except IntegrityError:
+            pass
         self.pittsburgh_id = self.get_location_id(
             {
                 "locality_name": "Pittsburgh",

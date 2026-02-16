@@ -76,7 +76,6 @@ def test_locations_related_data_requests(locations_test_setup: LocationsTestSetu
 
 def test_map_locations(test_data_creator_flask: TestDataCreatorFlask):
     tdc = test_data_creator_flask
-    tdc.clear_test_data()
     mls = MultiLocationSetup(tdc.tdcdb)
 
     data = tdc.request_validator.get_locations_map(
