@@ -1,7 +1,7 @@
 import uuid
 
 from flask import Response
-from jwt import ExpiredSignatureError
+from jwt import DecodeError, ExpiredSignatureError
 from pydantic import BaseModel
 from werkzeug.exceptions import Unauthorized, BadRequest
 
@@ -103,6 +103,8 @@ def get_github_user_info(access_token: str) -> GithubUserInfo:
         )
     except ExpiredSignatureError:
         raise Unauthorized("Access token has expired.")
+    except DecodeError:
+        raise Unauthorized("Invalid access token.")
     gh_access_token = simple_jwt.sub
     return GithubUserInfo(
         user_id=get_github_user_id(gh_access_token),
