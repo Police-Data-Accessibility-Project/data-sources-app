@@ -1,7 +1,7 @@
 import datetime
 
 import jwt
-from jwt import InvalidSignatureError
+from jwt import DecodeError, InvalidSignatureError
 from werkzeug.exceptions import BadRequest, Unauthorized
 
 from middleware.security.jwt.constants import ALGORITHM
@@ -34,7 +34,14 @@ class SimpleJWT:
 
     @staticmethod
     def decode(token: str, expected_purpose: JWTPurpose | None = None):
-        kid = int(jwt.get_unverified_header(token)["kid"])
+        try:
+            kid = int(jwt.get_unverified_header(token)["kid"])
+        except (KeyError, TypeError, ValueError) as err:
+            # Missing/non-int "kid" header — treat as a malformed token so
+            # callers only need to handle DecodeError (PyJWT already raises
+            # DecodeError for segment-level malformedness; this covers the
+            # remaining header-shape cases).
+            raise DecodeError("Invalid token.") from err
         decoded_purpose = JWTPurpose(kid)
         if expected_purpose is not None:
             SimpleJWT.validate_purpose(decoded_purpose, expected_purpose)
