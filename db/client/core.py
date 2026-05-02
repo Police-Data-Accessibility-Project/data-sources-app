@@ -58,7 +58,7 @@ from db.models.implementations.core.data_request.expanded import DataRequestExpa
 from db.models.implementations.core.data_request.github_issue_info import (
     DataRequestsGithubIssueInfo,
 )
-from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.distinct_source_url import DistinctSourceURL
 from db.models.implementations.core.external_account import ExternalAccount
 from db.models.implementations.core.location.core import Location
@@ -896,15 +896,15 @@ class DatabaseClient:
         data_source_id: int,
     ) -> list[dict] | None:
         query = (
-            select(DataSourceExpanded)
+            select(DataSource)
             .options(
-                selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations)
+                selectinload(DataSource.agencies).selectinload(Agency.locations)
             )
-            .where(DataSourceExpanded.id == data_source_id)
+            .where(DataSource.id == data_source_id)
         )
 
-        result: DataSourceExpanded = (
-            session.execute(query).scalars(DataSourceExpanded).first()
+        result: DataSource = (
+            session.execute(query).scalars(DataSource).first()
         )
         if result is None:
             return None

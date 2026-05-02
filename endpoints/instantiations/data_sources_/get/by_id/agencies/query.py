@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from db.models.implementations.core.agency.core import Agency
-from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_source.core import DataSource
 from db.queries.builder.core import QueryBuilderBase
 from endpoints.instantiations.data_sources_.get.by_id.agencies.format import (
     agency_to_data_sources_get_related_agencies_output,
@@ -16,20 +16,20 @@ class GetDataSourceRelatedAgenciesQueryBuilder(QueryBuilderBase):
 
     def run(self) -> list[dict] | None:
         query = (
-            select(DataSourceExpanded)
+            select(DataSource)
             .options(
-                selectinload(DataSourceExpanded.agencies).selectinload(
+                selectinload(DataSource.agencies).selectinload(
                     Agency.locations
                 ),
-                selectinload(DataSourceExpanded.agencies).selectinload(
+                selectinload(DataSource.agencies).selectinload(
                     Agency.meta_urls
                 ),
             )
-            .where(DataSourceExpanded.id == self.data_source_id)
+            .where(DataSource.id == self.data_source_id)
         )
 
-        result: DataSourceExpanded = (
-            self.session.execute(query).scalars(DataSourceExpanded).first()
+        result: DataSource = (
+            self.session.execute(query).scalars(DataSource).first()
         )
         if result is None:
             return None

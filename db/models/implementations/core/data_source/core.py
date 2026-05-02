@@ -1,10 +1,10 @@
 # pyright: reportUninitializedInstanceVariable=false
 from datetime import date
-from typing import final
+from typing import TYPE_CHECKING, final
 
-from sqlalchemy import Column, DateTime, func, String, ForeignKey
+from sqlalchemy import Column, DateTime, func, String, ForeignKey, select
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
 from db.enums import (
     AccessType,
@@ -20,9 +20,14 @@ from db.models.helpers import (
     enum_column,
 )
 from db.models.implementations.core.location.core import Location
+from db.models.implementations.core.record.type import RecordType
 from db.models.mixins import CountMetadata, CreatedAtMixin, IterWithSpecialCasesMixin
 from db.models.templates.standard import StandardBase
 from middleware.enums import Relations
+
+if TYPE_CHECKING:
+    from db.models.implementations.core.agency.core import Agency
+    from db.models.implementations.core.data_request.expanded import DataRequestExpanded
 
 
 @final
@@ -90,4 +95,28 @@ class DataSource(
         secondaryjoin="LinkLocationDataSourceView.location_id == Location.id",
         back_populates="data_sources",
         viewonly=True,
+    )
+
+    agencies: Mapped[list["Agency"]] = relationship(
+        argument="Agency",
+        secondary="public.link_agencies__data_sources",
+        primaryjoin="LinkAgencyDataSource.data_source_id == DataSource.id",
+        secondaryjoin="LinkAgencyDataSource.agency_id == Agency.id",
+        back_populates="data_sources",
+    )
+
+    data_requests: Mapped[list["DataRequestExpanded"]] = relationship(
+        argument="DataRequestExpanded",
+        secondary="public.link_data_requests__data_sources",
+        primaryjoin="LinkDataSourceDataRequest.data_source_id == DataSource.id",
+        secondaryjoin="LinkDataSourceDataRequest.request_id == DataRequestExpanded.id",
+        back_populates="data_sources",
+    )
+
+    # Replaces the data_sources_expanded view: joins record_types to expose name.
+    record_type_name = column_property(
+        select(RecordType.name)
+        .where(RecordType.id == record_type_id)
+        .correlate_except(RecordType)
+        .scalar_subquery()
     )

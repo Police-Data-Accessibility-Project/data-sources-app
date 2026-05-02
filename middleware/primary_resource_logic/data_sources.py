@@ -49,7 +49,7 @@ def get_data_sources_columns(
     # but are also potentially limited by requested columns
     data_sources_columns = optionally_limit_to_requested_columns(
         permitted_columns=get_permitted_columns(
-            relation=Relations.DATA_SOURCES_EXPANDED.value,
+            relation=Relations.DATA_SOURCES.value,
             role=role,
             user_permission=ColumnPermissionEnum.READ,
         ),

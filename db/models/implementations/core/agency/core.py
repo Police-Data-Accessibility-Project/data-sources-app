@@ -41,11 +41,11 @@ class Agency(StandardBase, CountMetadata, UpdatedAtMixin):
         back_populates="agencies",
     )
 
-    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
-        argument="DataSourceExpanded",
+    data_sources: Mapped[list["DataSource"]] = relationship(
+        argument="DataSource",
         secondary="public.link_agencies__data_sources",
         primaryjoin="LinkAgencyDataSource.agency_id == Agency.id",
-        secondaryjoin="LinkAgencyDataSource.data_source_id == DataSourceExpanded.id",
+        secondaryjoin="LinkAgencyDataSource.data_source_id == DataSource.id",
         back_populates="agencies",
     )
     meta_urls: Mapped[list[MetaURL]] = relationship(

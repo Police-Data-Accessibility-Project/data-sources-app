@@ -1,6 +1,6 @@
 from sqlalchemy.orm.collections import InstrumentedList
 
-from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.agency.core import Agency
 from endpoints.instantiations.data_sources_.get.convert import (
     data_source_to_get_data_sources_output,
@@ -8,7 +8,7 @@ from endpoints.instantiations.data_sources_.get.convert import (
 
 
 def test_data_source_to_get_data_sources_output_no_agencies():
-    data_source = DataSourceExpanded(
+    data_source = DataSource(
         id=1,
         name="Test Data Source",
     )

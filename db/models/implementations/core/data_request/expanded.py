@@ -15,10 +15,10 @@ class DataRequestExpanded(DataRequest):
     github_issue_url: Mapped[text | None]
     github_issue_number: Mapped[int | None]
 
-    data_sources: Mapped[list["DataSourceExpanded"]] = relationship(
-        argument="DataSourceExpanded",
+    data_sources: Mapped[list["DataSource"]] = relationship(
+        argument="DataSource",
         secondary="public.link_data_requests__data_sources",
         primaryjoin="DataRequestExpanded.id == LinkDataSourceDataRequest.request_id",
-        secondaryjoin="DataSourceExpanded.id == LinkDataSourceDataRequest.data_source_id",
+        secondaryjoin="DataSource.id == LinkDataSourceDataRequest.data_source_id",
         back_populates="data_requests",
     )

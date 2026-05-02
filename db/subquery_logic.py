@@ -84,7 +84,7 @@ class SubqueryParameterManager:
     @staticmethod
     def data_sources():
         return SubqueryParameterManager.get_subquery_params(
-            relation=Relations.DATA_SOURCES_EXPANDED,
+            relation=Relations.DATA_SOURCES,
             linking_column="data_sources",
             columns=["id", "name"],
         )
