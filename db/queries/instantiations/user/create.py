@@ -1,4 +1,5 @@
 from typing import final, override
+from uuid import uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -34,8 +35,14 @@ class CreateNewUserQueryBuilder(QueryBuilderBase):
             self._raise_if_display_name_taken(self.display_name)
 
         # We need the user.id before we can fall back to the id-based default
-        # display name, so insert a placeholder, flush, then update.
-        placeholder_display_name = self.display_name or "__pending__"
+        # display name, so insert a per-row unique placeholder, flush, then
+        # update. The placeholder must be unique-per-insert because the
+        # functional unique index on LOWER(display_name) would otherwise
+        # collide between concurrent signups that both omit display_name.
+        # Column is VARCHAR(30); keep prefix + truncated uuid <= 30 chars.
+        placeholder_display_name = (
+            self.display_name or f"_p_{uuid4().hex[:26]}"
+        )
         user = User(
             email=self.email,
             password_digest=self.password_digest,
