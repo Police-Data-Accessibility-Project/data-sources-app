@@ -305,10 +305,14 @@ class DatabaseClient:
         email: str,
         password_digest: str,
         capacities: list[UserCapacityEnum] | None = None,
+        display_name: str | None = None,
     ) -> int | None:
         """Adds a new user to the database."""
         builder = CreateNewUserQueryBuilder(
-            email=email, password_digest=password_digest, capacities=capacities
+            email=email,
+            password_digest=password_digest,
+            capacities=capacities,
+            display_name=display_name,
         )
         return self.run_query_builder(builder)
 
@@ -1264,6 +1268,7 @@ class DatabaseClient:
         password_digest: str,
         validation_token: str,
         capacities: list[UserCapacityEnum] | None,
+        display_name: str | None = None,
     ):
         self.add(
             PendingUser(
@@ -1273,8 +1278,17 @@ class DatabaseClient:
                 capacities=[capacity.value for capacity in capacities]
                 if capacities
                 else [],
+                display_name=display_name,
             )
         )
+
+    def display_name_taken(self, display_name: str) -> bool:
+        """Return True if any user already has a display_name matching the
+        given value (case-insensitive)."""
+        query = select(User.id).where(
+            func.lower(User.display_name) == display_name.lower()
+        )
+        return self.scalar(query) is not None
 
     def delete_user(self, user_id: int):
         query = delete(User).where(User.id == user_id)

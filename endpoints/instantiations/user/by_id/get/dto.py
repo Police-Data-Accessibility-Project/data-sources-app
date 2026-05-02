@@ -24,6 +24,9 @@ class ExternalAccountDTO(BaseModel):
 
 class UserProfileResponseSchemaInnerDTO(BaseModel):
     email: str = default_field_required(description="The email of the user")
+    display_name: str = default_field_required(
+        description="The public display name of the user"
+    )
     external_accounts: ExternalAccountDTO = default_field_required(
         description="The external accounts of the user"
     )
