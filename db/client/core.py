@@ -1211,7 +1211,9 @@ class DatabaseClient:
             ChangeLog.old_data,
             ChangeLog.new_data,
             ChangeLog.created_at,
-        ).where(ChangeLog.table_name == table.value)
+        ).where(ChangeLog.table_name == table.value).order_by(
+            ChangeLog.created_at.asc(), ChangeLog.id.asc()
+        )
         return self.mappings(query)
 
     @session_manager
