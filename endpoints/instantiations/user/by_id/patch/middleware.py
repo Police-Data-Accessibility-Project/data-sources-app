@@ -1,10 +1,14 @@
 from flask import Response
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, Conflict
 
 from db.client.core import DatabaseClient
 from endpoints.instantiations.user.by_id.patch.dto import UserPatchDTO
 from middleware.common_response_formatting import message_response
 from middleware.enums import PermissionsEnum
+from middleware.exceptions import DuplicateDisplayNameError
+from middleware.schema_and_dto.dtos.user.display_name import (
+    DISPLAY_NAME_DUPLICATE_MESSAGE,
+)
 from middleware.security.access_info.primary import AccessInfoPrimary
 
 
@@ -24,5 +28,8 @@ def patch_user(
 ) -> Response:
     if not _is_admin_or_owner(access_info, user_id):
         raise BadRequest("You do not have permission to patch this user.")
-    db_client.patch_user(user_id, dto)
+    try:
+        db_client.patch_user(user_id, dto)
+    except DuplicateDisplayNameError:
+        raise Conflict(DISPLAY_NAME_DUPLICATE_MESSAGE)
     return message_response("User patched.")

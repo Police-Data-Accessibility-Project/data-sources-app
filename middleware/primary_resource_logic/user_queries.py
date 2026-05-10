@@ -6,7 +6,14 @@ from werkzeug.security import generate_password_hash
 
 from db.client.core import DatabaseClient
 from middleware.common_response_formatting import message_response
-from middleware.exceptions import UserNotFoundError, DuplicateUserError
+from middleware.exceptions import (
+    DuplicateDisplayNameError,
+    DuplicateUserError,
+    UserNotFoundError,
+)
+from middleware.schema_and_dto.dtos.user.display_name import (
+    DISPLAY_NAME_DUPLICATE_MESSAGE,
+)
 from utilities.enums import SourceMappingEnum
 
 
@@ -61,5 +68,7 @@ def user_post_results(db_client: DatabaseClient, dto: UserRequestDTO) -> Respons
         raise Conflict(
             f"User with email {dto.email} already exists.",
         )
+    except DuplicateDisplayNameError:
+        raise Conflict(DISPLAY_NAME_DUPLICATE_MESSAGE)
 
     return message_response("Successfully added user.")

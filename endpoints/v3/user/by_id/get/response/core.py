@@ -15,6 +15,9 @@ class GetUserProfileResponse(BaseModel):
     email: str = Field(
         description="The email of the user.",
     )
+    display_name: str = Field(
+        description="The public display name of the user.",
+    )
     external_accounts: ExternalAccountsModel = Field(
         description="The external accounts of the user.",
     )

@@ -48,6 +48,13 @@ def setup_dto_class(
         if errors:
             first_error = errors[0]
             error_message = first_error.get("msg", str(e))
+            # Pydantic prefixes messages from raised ``ValueError`` with
+            # ``"Value error, "`` — strip it so our user-facing messages stay
+            # clean.
+            if isinstance(error_message, str) and error_message.startswith(
+                "Value error, "
+            ):
+                error_message = error_message[len("Value error, "):]
             raise BadRequest(error_message)
         raise BadRequest(str(e))
 

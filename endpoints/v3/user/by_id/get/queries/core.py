@@ -110,6 +110,7 @@ class GetUserByIdQueryBuilder(QueryBuilderBase):
         user = self.session.execute(query).scalars().one()
         return GetUserProfileResponse(
             email=user.email,
+            display_name=user.display_name,
             external_accounts=self._process_external_accounts(user.external_accounts),
             recent_searches=self._process_recent_searches(user.recent_searches),
             followed_searches=self._process_follows(user.follows),

@@ -7,6 +7,9 @@ from db.client.core import DatabaseClient
 from endpoints.instantiations.auth_.signup.dto import UserStandardSignupRequestDTO
 from middleware.common_response_formatting import message_response
 from middleware.primary_resource_logic.api_key import generate_token
+from middleware.schema_and_dto.dtos.user.display_name import (
+    DISPLAY_NAME_DUPLICATE_MESSAGE,
+)
 from middleware.security.jwt.core import SimpleJWT
 from middleware.security.jwt.enums import JWTPurpose
 from middleware.third_party_interaction_logic.mailgun_.send import send_via_mailgun
@@ -26,6 +29,11 @@ def signup_wrapper(
             "User with email has already signed up. "
             + "Please validate your email or request a new validation email."
         )
+
+    if dto.display_name is not None and db_client.display_name_taken(
+        dto.display_name
+    ):
+        raise Conflict(DISPLAY_NAME_DUPLICATE_MESSAGE)
 
     jwt_token = _setup_pending_user(db_client, dto)
 
@@ -113,6 +121,7 @@ def _setup_pending_user(
         password_digest=password_digest,
         validation_token=token,
         capacities=dto.capacities,
+        display_name=dto.display_name,
     )
     jwt_token = get_validation_token_jwt(dto.email, token)
     return jwt_token

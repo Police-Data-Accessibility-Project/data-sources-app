@@ -14,6 +14,7 @@ class PendingUser(StandardBase, CreatedAtMixin):
     email: Mapped[str] = mapped_column(unique=True)
     password_digest: Mapped[str | None]
     validation_token: Mapped[str | None]
+    display_name: Mapped[str | None]
     capacities: Mapped[list[UserCapacityEnum]] = enum_list_column(
         enum=UserCapacityEnum,
         name="user_capacities_enum",

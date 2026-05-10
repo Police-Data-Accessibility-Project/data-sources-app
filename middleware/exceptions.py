@@ -15,6 +15,12 @@ class DuplicateUserError(Exception):
     pass
 
 
+class DuplicateDisplayNameError(Exception):
+    """Raised when a requested user display_name is already in use."""
+
+    pass
+
+
 class InvalidAPIKeyException(Exception):
     pass
 

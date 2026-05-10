@@ -21,6 +21,7 @@ class User(StandardBase, CreatedAtMixin):
         server_default=text_func("generate_api_key()")
     )
     role: Mapped[text | None]
+    display_name: Mapped[str] = mapped_column(unique=False)
 
     # Relationships
     permissions = relationship(
