@@ -64,7 +64,6 @@ class Relations(Enum):
     AGENCIES = "agencies"
     LINK_AGENCIES_DATA_SOURCES = "link_agencies__data_sources"
     DATA_SOURCES = "data_sources"
-    DATA_SOURCES_EXPANDED = "data_sources_expanded"
     DATA_SOURCES_ARCHIVE_INFO = "data_sources_archive_info"
     LINK_DATA_SOURCES_DATA_REQUESTS = "link_data_requests__data_sources"
     LINK_USER_FOLLOWED_LOCATION = "link_user_followed_location"

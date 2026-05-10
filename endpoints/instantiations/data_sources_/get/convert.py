@@ -1,12 +1,12 @@
 from typing import Any
 
 from db.helpers_.result_formatting import location_to_location_info
-from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.location.expanded import LocationExpanded
 
 
 def data_source_to_get_data_sources_output(
-    data_source: DataSourceExpanded,
+    data_source: DataSource,
     data_sources_columns: list[str] = None,
     data_requests_columns: list[str] = None,
 ) -> dict[str, Any]:

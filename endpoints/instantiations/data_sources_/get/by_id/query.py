@@ -6,7 +6,7 @@ from db.dynamic_query_constructor import DynamicQueryConstructor
 from endpoints.instantiations.data_sources_.get.convert import (
     data_source_to_get_data_sources_output,
 )
-from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_source.core import DataSource
 from db.queries.builder.core import QueryBuilderBase
 
 
@@ -29,13 +29,13 @@ class GetDataSourceByIDQueryBuilder(QueryBuilderBase):
         )
 
         query = (
-            select(DataSourceExpanded)
+            select(DataSource)
             .options(*load_options)
-            .where(DataSourceExpanded.id == self.data_source_id)
+            .where(DataSource.id == self.data_source_id)
         )
 
-        result: DataSourceExpanded = (
-            self.session.execute(query).scalars(DataSourceExpanded).first()
+        result: DataSource = (
+            self.session.execute(query).scalars(DataSource).first()
         )
         if result is None:
             return None

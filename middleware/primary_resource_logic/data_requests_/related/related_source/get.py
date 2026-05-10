@@ -13,7 +13,7 @@ def get_data_request_related_sources(db_client: DatabaseClient, dto: GetByIDBase
             dto=dto,
             db_client_method=DatabaseClient.get_data_requests,
             primary_relation=Relations.DATA_REQUESTS,
-            related_relation=Relations.DATA_SOURCES_EXPANDED,
+            related_relation=Relations.DATA_SOURCES,
             linking_column="data_sources",
             metadata_count_name="data_sources_count",
             resource_name="sources",

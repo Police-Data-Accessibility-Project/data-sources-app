@@ -10,7 +10,6 @@ from endpoints.instantiations.data_sources_.get.convert import (
     data_source_to_get_data_sources_output,
 )
 from db.models.implementations.core.data_source.core import DataSource
-from db.models.implementations.core.data_source.expanded import DataSourceExpanded
 from db.queries.builder.core import QueryBuilderBase
 from middleware.enums import Relations
 
@@ -35,7 +34,7 @@ class GetDataSourcesQueryBuilder(QueryBuilderBase):
         order_by_clause = DynamicQueryConstructor.get_sql_alchemy_order_by_clause(
             order_by=self.order_by,
             relation=Relations.DATA_SOURCES.value,
-            default=asc(DataSourceExpanded.id),
+            default=asc(DataSource.id),
         )
 
         load_options = DynamicQueryConstructor.data_sources_get_load_options(
@@ -43,13 +42,13 @@ class GetDataSourcesQueryBuilder(QueryBuilderBase):
             data_sources_columns=self.data_sources_columns,
         )
 
-        query = select(DataSourceExpanded)
+        query = select(DataSource)
 
         query = (
             query.options(*load_options).order_by(order_by_clause).limit(self.limit)
         ).offset(get_offset(self.page))
 
-        results: Sequence[DataSourceExpanded] = (
+        results: Sequence[DataSource] = (
             self.session.execute(query).scalars(DataSource).all()
         )
         final_results = []

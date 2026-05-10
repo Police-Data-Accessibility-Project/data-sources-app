@@ -10,7 +10,7 @@ from db.db_client_dataclasses import (
     OrderByParameters,
     WhereMapping,
 )
-from db.models.implementations.core.data_source.expanded import DataSourceExpanded
+from db.models.implementations.core.data_source.core import DataSource
 from db.models.implementations.core.data_request.expanded import DataRequestExpanded
 from db.models.implementations.core.agency.core import Agency
 from db.models.table_reference import (
@@ -38,7 +38,7 @@ class DynamicQueryConstructor:
     ) -> list:
         load_options = [
             selectinload(Agency.data_sources).load_only(
-                DataSourceExpanded.id, DataSourceExpanded.name
+                DataSource.id, DataSource.name
             ),
             selectinload(Agency.locations),
         ]
@@ -57,12 +57,12 @@ class DynamicQueryConstructor:
         data_requests_columns: list[str],
     ) -> list:
         load_options = [
-            selectinload(DataSourceExpanded.agencies).selectinload(Agency.locations),
-            selectinload(DataSourceExpanded.agencies).selectinload(Agency.meta_urls),
+            selectinload(DataSource.agencies).selectinload(Agency.locations),
+            selectinload(DataSource.agencies).selectinload(Agency.meta_urls),
         ]
 
         data_sources_attributes = [
-            getattr(DataSourceExpanded, column) for column in data_sources_columns
+            getattr(DataSource, column) for column in data_sources_columns
         ]
         load_options.append(load_only(*data_sources_attributes))
 
@@ -70,7 +70,7 @@ class DynamicQueryConstructor:
             getattr(DataRequestExpanded, column) for column in data_requests_columns
         ]
         load_options.append(
-            selectinload(DataSourceExpanded.data_requests).load_only(
+            selectinload(DataSource.data_requests).load_only(
                 *data_requests_attributes
             )
         )

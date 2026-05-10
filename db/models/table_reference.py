@@ -9,7 +9,6 @@ from db.models.implementations.core.data_request.github_issue_info import (
 )
 from db.models.implementations.core.data_source.archive import DataSourceArchiveInfo
 from db.models.implementations.core.data_source.core import DataSource
-from db.models.implementations.core.data_source.expanded import DataSourceExpanded
 from db.models.implementations.core.distinct_source_url import DistinctSourceURL
 from db.models.implementations.core.external_account import ExternalAccount
 from db.models.implementations.core.location.core import Location
@@ -56,7 +55,6 @@ SQL_ALCHEMY_TABLE_REFERENCE = {
     "data_requests": DataRequest,
     "data_requests_expanded": DataRequestExpanded,
     "data_sources": DataSource,
-    "data_sources_expanded": DataSourceExpanded,
     "data_sources_archive_info": DataSourceArchiveInfo,
     "link_data_requests__data_sources": LinkDataSourceDataRequest,
     "reset_tokens": ResetToken,
